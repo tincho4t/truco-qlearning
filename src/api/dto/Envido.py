@@ -14,3 +14,11 @@ class Envido(object):
 		self.sung = dic['sung']
 		self.oppenentEnvidoScore = dic['oppenent_envido_score']
 	
+	def getXstatus(self):
+		return self.status
+
+	def getXsung(self):
+		return self.sung
+
+	def getXoppenentEnvidoScore(self):
+		return self.oppenentEnvidoScore

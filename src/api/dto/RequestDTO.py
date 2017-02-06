@@ -48,7 +48,7 @@ class RequestDTO(object):
         self.score = Score(params['score'])
         self.cardsNotPlayed = self._cardsNotPlayed(params['cards_not_played'])
         self.round = Round(params['round'])
-        self.IAmHand = params['i_am_hand']
+        self.iAmHand = params['i_am_hand']
         self.envido = Envido(params['envido'])
     
     def _cardsNotPlayed(self, rawCards):
@@ -56,3 +56,20 @@ class RequestDTO(object):
         for card in rawCards:
             cards.append(Card(card))
         return cards
+
+    def getScore(self):
+        return self.score
+
+    def getCardsNotPlayed(self):
+        return self.cardsNotPlayed
+
+    def getRound(self):
+        return self.round
+
+    def iAmHand(self):
+        return self.iAmHand
+
+    def getEnvido(self):
+        return self.envido
+
+

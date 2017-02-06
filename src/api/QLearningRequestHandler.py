@@ -5,6 +5,8 @@ from urlparse import parse_qs
 from dto.RequestDTO import RequestDTO
  
 class QLearningRequestHandler(BaseHTTPRequestHandler):
+    """ Static variable that contains the player """
+    player = None
     
     """
         Parse the query string parameters.
@@ -25,8 +27,8 @@ class QLearningRequestHandler(BaseHTTPRequestHandler):
         # return RequestDTO(self.getParameters())
 
     def do_POST(self):
-        response = self.play(self.getParsedParameters())
+        response = QLearningRequestHandler.player.play(self.getParsedParameters())
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(json.dumps({'data': str(response)}))
+        self.wfile.write(json.dumps({'features': str(response)}))
         return
