@@ -5,7 +5,7 @@ from urlparse import parse_qs
 from dto.RequestDTO import RequestDTO
  
 class QLearningRequestHandler(BaseHTTPRequestHandler):
-    """ Static variable that contains the player """
+    """ Static variable that contains the q-player """
     player = None
     
     """

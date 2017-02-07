@@ -66,9 +66,6 @@ class RequestDTO(object):
     def getRound(self):
         return self.round
 
-    def iAmHand(self):
-        return self.iAmHand
-
     def getEnvido(self):
         return self.envido
 
