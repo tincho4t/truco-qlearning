@@ -39,7 +39,8 @@ class RequestDTO(object):
                 "status": "finished",
                 "sung": ["Envido", "Envido", "RealEnvido"],
                 "oppenent_envido_score": 26
-            }
+            },
+            "possible_actions": ["Truco", "PlayCard"]
         }
     """
     def __init__(self, params):
@@ -50,6 +51,8 @@ class RequestDTO(object):
         self.round = Round(params['round'])
         self.iAmHand = params['i_am_hand']
         self.envido = Envido(params['envido'])
+        if('possible_actions' in params):
+            self.possibleActions = params['possible_actions']
     
     def _cardsNotPlayed(self, rawCards):
         cards = list()
@@ -68,5 +71,4 @@ class RequestDTO(object):
 
     def getEnvido(self):
         return self.envido
-
 
