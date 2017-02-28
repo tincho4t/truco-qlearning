@@ -3,22 +3,22 @@
 class Envido(object):
 	"""Represent the Envido's status
 		{
-            status: finished,
+            is_open: false,
             sung: ["Envido", "Envido", "RealEnvido"],
             oppenent_envido_score: 26
         }
 	"""
 	def __init__(self, dic):
 		super(Envido, self).__init__()
-		self.status = dic['status']
+		self.isOpen = dic['is_open']
 		self.sung = dic['sung']
 		self.oppenentEnvidoScore = dic['oppenent_envido_score']
 	
-	def getXstatus(self):
-		return self.status
+	def isOpen(self):
+		return self.isOpen
 
-	def getXsung(self):
+	def getSung(self):
 		return self.sung
 
-	def getXoppenentEnvidoScore(self):
+	def getOppenentEnvidoScore(self):
 		return self.oppenentEnvidoScore

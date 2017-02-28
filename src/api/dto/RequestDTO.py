@@ -1,6 +1,5 @@
 from Card import Card
 from Score import Score
-from Round import Round
 from Envido import Envido
 
 class RequestDTO(object):
@@ -23,17 +22,17 @@ class RequestDTO(object):
                     "value": 7
                 }
             ],
-            "round": {
-                "actual_round": "second",
-                "first_round": {
+            "current_round": 1, // "Second"
+            "rounds": [
+                {
                     "my_card_played" : {"suit": "gold", "value": 5},
                     "opponent_card_played": {"suit": "coup", "value": 7}
                 },
-                "second_round": {
+                {
                     "my_card_played" : null,
                     "opponent_card_played": {"suit": "sword", "value": 2}
                 }
-            },
+            ],
             "i_am_hand": true,
             "envido": {
                 "status": "finished",
@@ -48,7 +47,8 @@ class RequestDTO(object):
         print params
         self.score = Score(params['score'])
         self.cardsNotPlayed = self._cardsNotPlayed(params['cards_not_played'])
-        self.round = Round(params['round'])
+        self.currentRound = params['current_round']
+        self.rounds = params['rounds']
         self.iAmHand = params['i_am_hand']
         self.envido = Envido(params['envido'])
         if('possible_actions' in params):
@@ -66,8 +66,8 @@ class RequestDTO(object):
     def getCardsNotPlayed(self):
         return self.cardsNotPlayed
 
-    def getRound(self):
-        return self.round
+    def getRounds(self):
+        return self.rounds
 
     def getEnvido(self):
         return self.envido
