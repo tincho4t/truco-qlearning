@@ -22,6 +22,5 @@ class Player(object):
             features += adapter.convert(requestDTO)
         return self.predict(features)
 
-    
-    def learn(self):
+    def learn(self, learnDTO):
         raise NotImplementedError('subclasses must override learn')

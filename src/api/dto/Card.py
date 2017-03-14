@@ -9,4 +9,9 @@ class Card(object):
 		super(Card, self).__init__()
 		self.suit = dic['suit']
 		self.value = dic['value']
-	
+
+	def toDic(self):
+		return {
+			"suit": self.suit,
+			"value": self.value
+		}

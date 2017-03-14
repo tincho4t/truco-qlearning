@@ -30,11 +30,13 @@ class QLearningRequestHandler(BaseHTTPRequestHandler):
         response = QLearningRequestHandler.player.play(self.getParsedParameters())
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(json.dumps({'features': str(response)}))
+        self.wfile.write(json.dumps(response.toDic()))
         return
 
     def do_OPTIONS(self):           
         self.send_response(200, "ok")       
-        self.send_header('Access-Control-Allow-Origin', '*')                
+        self.send_header("Content-type", "application/json")
         self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
-        self.send_header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Access-Control-Allow-Origin, *")
+        self.send_header("Access-Control-Allow-Origin", "*");
+        self.send_header("Access-Control-Expose-Headers", "Access-Control-Allow-Origin");
+        self.send_header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
