@@ -31,6 +31,12 @@ class QLearner(Player):
             m += adapter.size
         return m
 
+    def getCorrectCard(self, action):
+        #TODO
+
+    def getPossibleActionsWithCardOrder(self, possibleActions):
+        #TODO
+
     def getAdapters(self):
         return self.adapters
 
@@ -42,15 +48,20 @@ class QLearner(Player):
 
     def getWinningPossibleAction(self, predictions, possibleActions):
         indexOfSortedPredictions = predictions.argsort()
-        possibleActionsIndexs = [ACTION.getIndex(a) for a in possibleActions]
+        possibleActionsWithCardOrder = self.getPossibleActionsWithCardOrder(possibleActions)
+        possibleActionsIndexs = [ACTION.getIndex(a) for a in possibleActionsWithCardOrder]
         for index in indexOfSortedPredictions:
             if index in possibleActionsIndexs
-                return index
+                return ACTION.getAction(index)
 
     def predict(self, requestDTO):
         y_hat_vector = self.algorithm.predict(self.getFeatureVector(requestDTO))
         action = self.getWinningPossibleAction(y_hat_vector, requestDTO.possibleActions)
-        return action
+        response = ResponseDTO()
+        response.setAction(action)
+        if(action in [Action.PLAYCARDLOW, Action.PLAYCARDMIDDLE, Action.PLAYCARDHIGH]):
+            response.setCard(self.getCorrectCard(action))
+        return response
 
     def learn(self, learnDTO):
         # We add to our train dataset the game that just ended        
