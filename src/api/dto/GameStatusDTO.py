@@ -49,7 +49,7 @@ class GameStatusDTO(object):
             ],
             "i_am_hand": true,
             "envido": {
-                "status": "finished",
+                "is_open": false,
                 "sung": ["Envido", "Envido", "RealEnvido"],
                 "oppenent_envido_score": 26
             },
