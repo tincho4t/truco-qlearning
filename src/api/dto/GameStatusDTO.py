@@ -2,7 +2,7 @@ from Card import Card
 from Score import Score
 from Envido import Envido
 
-class RequestDTO(object):
+class GameStatusDTO(object):
     """ Represent the game state
         that the Request will contain"""
     """ Json example:
@@ -57,7 +57,7 @@ class RequestDTO(object):
         }
     """
     def __init__(self, params):
-        super(RequestDTO, self).__init__()
+        super(GameStatusDTO, self).__init__()
         print params
         self.score = Score(params['score'])
         self.cardsNotPlayed = self._cardsNotPlayed(params['cards_not_played'])

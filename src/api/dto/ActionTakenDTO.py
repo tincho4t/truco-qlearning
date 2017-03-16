@@ -1,6 +1,6 @@
 
 
-class ResponseDTO(object):
+class ActionTakenDTO(object):
 
 	def __init__(self):
 		self.action = None

@@ -6,7 +6,7 @@ from featureAdapter.SimplifyMyRemainingCards import SimplifyMyRemainingCards
 from featureAdapter.IAmHand import IAmHand
 from featureAdapter.RequestDTOFeature import RequestDTOFeature
 import random
-from api.dto.ResponseDTO import ResponseDTO
+from api.dto.ActionTakenDTO import ActionTakenDTO
 from api.dto.Action import Action
 
 
@@ -25,7 +25,7 @@ class Randomio(Player):
         requestDTO = x[0]
         possibleActions = requestDTO.possibleActions
         action = random.choice(possibleActions)
-        response = ResponseDTO()
+        response = ActionTakenDTO()
         response.setAction(action)
         if(action == Action.PLAYCARD):
             possibleCards = requestDTO.cardsNotPlayed
@@ -34,4 +34,4 @@ class Randomio(Player):
         return response
 
     def learn(self, learnDTO):
-        raise NotImplementedError('subclasses must override learn')
+        print "Lerning... ", learnDTO

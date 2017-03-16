@@ -7,7 +7,7 @@ sys.path.insert(0, '../api')
 from featureAdapter.CardUsage import CardUsage
 from featureAdapter.CurrentRound import CurrentRound
 from featureAdapter.IAmHand import IAmHand
-from api.dto.ResponseDTO import ResponseDTO
+from api.dto.ActionTakenDTO import ActionTakenDTO
 from api.dto.Action import Action
 from model.QLearningNeuralNetwork import QLearningNeuralNetwork
 
@@ -57,7 +57,7 @@ class QLearner(Player):
     def predict(self, requestDTO):
         y_hat_vector = self.algorithm.predict(self.getFeatureVector(requestDTO))
         action = self.getWinningPossibleAction(y_hat_vector, requestDTO.possibleActions)
-        response = ResponseDTO()
+        response = ActionTakenDTO()
         response.setAction(action)
         if(action in [Action.PLAYCARDLOW, Action.PLAYCARDMIDDLE, Action.PLAYCARDHIGH]):
             response.setCard(self.getCorrectCard(action))
