@@ -17,10 +17,7 @@ class Player(object):
         raise NotImplementedError('subclasses must override this method')
 
     def play(self, requestDTO):
-        features = list()
-        for adapter in self.getAdapters():
-            features += adapter.convert(requestDTO)
-        return self.predict(features)
+        return self.predict(requestDTO)
 
     def learn(self, learnDTO):
         raise NotImplementedError('subclasses must override learn')

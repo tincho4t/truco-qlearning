@@ -1,9 +1,9 @@
-from player.Randomio import Randomio
+from player.QLearner import QLearner
 from api.Webserver import Webserver
 from api.QLearningRequestHandler import QLearningRequestHandler
 
 def main():
-	QLearningRequestHandler.player = Randomio()
+	QLearningRequestHandler.player = QLearner()
 	ws = Webserver()
 	ws.run()
 

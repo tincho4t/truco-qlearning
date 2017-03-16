@@ -1,5 +1,7 @@
+import sys
+sys.path.insert(0, '../api')
 
-
+from api.dto.GameStatusDTO import GameStatusDTO
 
 class LearnDTO(object):
 	"""docstring for LearnDTO"""
@@ -8,7 +10,7 @@ class LearnDTO(object):
 		self.gameStatusList = []
 		self.actionList = []
 		for row in dic['hand_hystory']:
-			self.gameStatusList.append(row['gameStatus'])
+			self.gameStatusList.append(GameStatusDTO(row['gameStatus']))
 			self.actionList.append(row['action'])
 		self.size = len(self.gameStatusList)
 		self.points = dic['points']
@@ -17,4 +19,4 @@ class LearnDTO(object):
 		return self.actionList
 
 	def getGameStatusList(self):
-		return self.gameStatus
+		return self.gameStatusList

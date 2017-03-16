@@ -12,11 +12,19 @@ class SimplifyValueCard(FeatureAdapterInterface):
 	    Los 7 y Anchos         -> 4
 	"""
 	def cardToFeature(self, card):
-		if(card.value in [4,5,6] or (card.value == 7 and card.suit in [Suit.COUP, Suit.SWORD])):
+		if(card.value in [4,5,6] or (card.value == 7 and card.suit in [Suit.COUP, Suit.CLUB])):
 			return [1]
-		elif(card.value in [10,11,12] or (card.value == 1 and card.suit in [Suit.COUP, Suit.CLUB])):
+		elif(card.value in [10,11]):
 			return [2]
-		elif(card.value in [2,3]):
+		elif(card.value in [12] or (card.value == 1 and card.suit in [Suit.COUP, Suit.COIN])):
 			return [3]
-		else:
+		elif(card.value in [2]):
 			return [4]
+		elif(card.value in [3]):
+			return [5]
+		elif(card.value == 7 and card.suit in [Suit.COIN, Suit.SWORD]):
+			return [6]
+		elif(card.value == 1 and card.suit == Suit.CLUB):
+			return [7]		
+		else:
+			return [8]
