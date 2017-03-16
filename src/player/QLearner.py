@@ -8,6 +8,8 @@ from featureAdapter.SimplifyValueCard import SimplifyValueCard
 from featureAdapter.CardUsage import CardUsage
 from featureAdapter.CurrentRound import CurrentRound
 from featureAdapter.IAmHand import IAmHand
+from featureAdapter.CountPossibleActions import CountPossibleActions
+from featureAdapter.RivalCardsUsed import RivalCardsUsed
 from api.dto.ActionTakenDTO import ActionTakenDTO
 from api.dto.Action import Action as ACTION
 from api.dto.Card import Card
@@ -20,13 +22,14 @@ class QLearner(Player):
         super(QLearner, self).__init__()
         print "QLearner created!"
         self.dataFilePath = 'data.h5' # Where to save data for offline learning
-        self.adapters = [IAmHand(), CurrentRound(), CardUsage()]
+        self.adapters = [IAmHand(), CurrentRound(), CountPossibleActions(), CardUsage(), RivalCardsUsed()]
         self.m = self.getFeatureSetSize() # Sum of all adapter sizes
         self.X = np.empty((0,self.m), int) # INPUT of NN (state of game before action)
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
         self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayer=1000, outputLayer=15)
         self.cardConverter = SimplifyValueCard()
+        self.learningLoops = 0
 
     def getFeatureSetSize(self):
         m = 0
@@ -128,15 +131,16 @@ class QLearner(Player):
         self.ACTION = np.append(self.ACTION, np.array(actionRows), axis = 0)
         self.Y = np.append(self.Y, yRows, axis = 0)
 
+        self.learningLoops += 1
         if self.learnCondition():
-            self.algorithm.learn(self.X, self.ACTION, self.Y) # Really learn from dataset
+            self.algorithm.learn(self.X, self.ACTION, self.Y, learnScale=(self.X.shape[0] > 500)) # Really learn from dataset
             self.saveDataset() # Save data for offline learning
             self.clearDataset() # Clear data for new batches
         return "OK"
 
     def learnCondition(self):
         print self.X.shape[0]
-        return self.X.shape[0] > 10
+        return self.X.shape[0] > 100
 
     def saveDataset(self):
         f = tables.open_file(self.dataFilePath, mode='a')
