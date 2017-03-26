@@ -58,7 +58,6 @@ class GameStatusDTO(object):
     """
     def __init__(self, params):
         super(GameStatusDTO, self).__init__()
-        print params
         self.score = Score(params['score'])
         self.cardsNotPlayed = self._cardsNotPlayed(params['cards_not_played'])
         self.initialCards = self._initialCards(params['initial_cards'])

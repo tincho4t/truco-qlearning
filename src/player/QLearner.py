@@ -1,5 +1,6 @@
 from Player import Player
 import sys
+import random
 import numpy as np
 import tables
 sys.path.insert(0, '../featureAdapter')
@@ -15,7 +16,6 @@ from api.dto.ActionTakenDTO import ActionTakenDTO
 from api.dto.Action import Action as ACTION
 from api.dto.Card import Card
 from model.QLearningNeuralNetwork import QLearningNeuralNetwork
-
 
 class QLearner(Player):
     
@@ -100,6 +100,9 @@ class QLearner(Player):
                 return ACTION.actionToStringDic[index]
 
     def predict(self, requestDTO):
+        if(self.chooseRandomOption()):
+            return self.getRandomOption(requestDTO)
+
         yHatVector = self.algorithm.predict(self.getFeatureVector(requestDTO))
         action = self.getWinningPossibleAction(yHatVector, requestDTO)
         response = ActionTakenDTO()
@@ -161,3 +164,22 @@ class QLearner(Player):
         self.X = np.empty((0,self.m), int)
         self.ACTION = np.array([])
         self.Y = np.array([])
+
+
+    def getRandomOption(self, requestDTO):
+        print "taking random option"
+        action = random.choice(requestDTO.possibleActions)
+        response = ActionTakenDTO()
+        response.setAction(action)
+        if(action == ACTION.PLAYCARD):
+            possibleCards = requestDTO.cardsNotPlayed
+            response.setCard(random.choice(possibleCards))
+        return response
+
+    def chooseRandomOption(self):
+        MAX_RANDOM_ITERATIONS = 50000
+        if(self.learningLoops >= MAX_RANDOM_ITERATIONS):
+            return False
+        else:
+            probability = 1 - (self.learningLoops / MAX_RANDOM_ITERATIONS)
+            return random.random() < probability
