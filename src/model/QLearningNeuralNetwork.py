@@ -7,9 +7,9 @@ from sklearn.exceptions import NotFittedError
 # Implementation of a neural network addapted for Q Learning
 class QLearningNeuralNetwork(Model):
     
-    def __init__(self, inputLayer, hiddenLayer, outputLayer):
+    def __init__(self, inputLayer, hiddenLayerSizes, outputLayer):
         super(QLearningNeuralNetwork, self).__init__()
-        self.NN = MLPRegressor(warm_start=True, verbose=True, max_iter=100000000, tol=0.00000001, batch_size=10)
+        self.NN = MLPRegressor(warm_start=True, verbose=True, max_iter=100000000, tol=0.00000001, batch_size=10, hidden_layer_sizes=hiddenLayerSizes)
         self.outputLayer = outputLayer
         self.Scaler = preprocessing.StandardScaler()
 

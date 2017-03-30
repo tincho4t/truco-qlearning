@@ -5,7 +5,6 @@ class MyEnvidoScore(object):
     
     def convert(self, requestDTO):
         points = self.getEnvidoScore(requestDTO.getInitialCards())
-        print "Envido: ", points,"Initial cards: ", requestDTO.getInitialCards()[0], requestDTO.getInitialCards()[1], requestDTO.getInitialCards()[2]
         return points
 
     def getEnvidoScore(self, initialCards):

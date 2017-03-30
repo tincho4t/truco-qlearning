@@ -29,7 +29,7 @@ class QLearner(Player):
         self.X = np.empty((0,self.m), int) # INPUT of NN (state of game before action)
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
-        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayer=1000, outputLayer=15)
+        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(10,10), outputLayer=15)
         self.cardConverter = SimplifyValueCard()
         self.learningLoops = 0
 
@@ -178,7 +178,7 @@ class QLearner(Player):
         return response
 
     def chooseRandomOption(self):
-        MAX_RANDOM_ITERATIONS = 50000
+        MAX_RANDOM_ITERATIONS = 100
         if(self.learningLoops >= MAX_RANDOM_ITERATIONS):
             return False
         else:
