@@ -154,7 +154,7 @@ class QLearner(Player):
             self.Y = self.Y[:-diff]
             randomTrainIndexes = np.random.randint(0,self.memorySize,diff)
             self.algorithm.learn(self.X[randomTrainIndexes,:], self.ACTION[randomTrainIndexes], self.Y[randomTrainIndexes])
-            #self.saveDataset(featureRows, actionRows, yRows) # Save data for offline learning
+            self.saveDataset(np.array(featureRows), np.array(actionRows), np.array(yRows)) # Save data for offline learning
 
         # Target network hack
         self.steps += 1
@@ -164,21 +164,18 @@ class QLearner(Player):
 
         return "OK"
 
-    def learnCondition(self):
-        return self.X.shape[0] > 1000
-
-    def saveDataset(self):
+    def saveDataset(self, X, ACTION, Y):
         f = tables.open_file(self.dataFilePath, mode='a')
         # Is this the first time?
         if not "/X" in f:
             atom = tables.Int64Atom()
             atomFloat = tables.Float64Atom()
-            c_array = f.create_earray(f.root, 'X', atomFloat, (0, self.X.shape[1]))
+            c_array = f.create_earray(f.root, 'X', atomFloat, (0, X.shape[1]))
             c_array = f.create_earray(f.root, 'ACTION', atom, (0, 1))
             c_array = f.create_earray(f.root, 'Y', atomFloat, (0, 1))
-        f.root.X.append(self.X)
-        f.root.ACTION.append(self.ACTION.reshape(-1, 1))
-        f.root.Y.append(self.Y.reshape(-1, 1))
+        f.root.X.append(X)
+        f.root.ACTION.append(ACTION.reshape(-1, 1))
+        f.root.Y.append(Y.reshape(-1, 1))
         f.close()
 
     def clearDataset(self):
