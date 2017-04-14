@@ -38,7 +38,7 @@ class QLearner(Player):
         self.steps = 0 # Current steps from last update of target algorithm
         self.memorySize = 10000 # Size of memory for ExpRep
         self.trainSize = 32 # Expe Replay size
-        self.epsilon = 0.05 # Probability of taking a random action
+        self.epsilon = 0.05 + 2 # Probability of taking a random action
         self.loadRandomTestDataset()
 
     def getFeatureSetSize(self):
@@ -149,7 +149,8 @@ class QLearner(Player):
         for row in featureRows[1:]:
             # Rj + y * max(Q for all actions of next state [1:])
             # Target network hack
-            yRows.append(0 + self.lr*max(self.algorithm.predict(np.array(row).reshape(1,-1), target=True)[0]))
+            #yRows.append(0 + self.lr*max(self.algorithm.predict(np.array(row).reshape(1,-1), target=True)[0]))
+            yRows.append(0)
         yRows.append(learnDTO.points) # Last action take got the points of the game
 
         # Experience Replay hack
@@ -161,17 +162,17 @@ class QLearner(Player):
             self.X = self.X[:-diff]
             self.ACTION = self.ACTION[:-diff]
             self.Y = self.Y[:-diff]
-        if self.steps % 100 == 0:
-            randomTrainIndexes = np.random.randint(0, min(self.memorySize, self.Y.shape[0]), self.trainSize)
-            self.algorithm.learn(self.X[randomTrainIndexes,:], self.ACTION[randomTrainIndexes], self.Y[randomTrainIndexes])
-            # self.saveDataset(np.array(featureRows), np.array(actionRows), np.array(yRows), np.array(possibleActionsRows)) # Save data for offline learning
+        # if self.steps % 100 == 0:
+        #     randomTrainIndexes = np.random.randint(0, min(self.memorySize, self.Y.shape[0]), self.trainSize)
+        #     self.algorithm.learn(self.X[randomTrainIndexes,:], self.ACTION[randomTrainIndexes], self.Y[randomTrainIndexes])
 
+        self.saveDataset(np.array(featureRows), np.array(actionRows), np.array(yRows), np.array(possibleActionsRows)) # Save data for offline learning
         # Target network hack
         self.steps += 1
-        if self.C < self.steps:
-            self.algorithm.updateTarget()
-            self.steps = 0
-            self.testConvergence()
+        # if self.C < self.steps:
+        #     self.algorithm.updateTarget()
+        #     self.steps = 0
+        #     self.testConvergence()
 
         return "OK"
 
