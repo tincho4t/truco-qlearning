@@ -30,10 +30,15 @@ class QLearner(Player):
         self.X = np.empty((0,self.m), int) # INPUT of NN (state of game before action)
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
-        #self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(10,10), outputLayer=15)
-        self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=10)
+        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(10,10), outputLayer=15)
+        #self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=10)
         self.cardConverter = SimplifyValueCard()
         self.learningLoops = 0
+        self.lr = 0.01 # LR for reward function
+        self.C = 10 # When to update target algorithm
+        self.steps = 0 # Current steps from last update of target algorithm
+        self.memorySize = 200 # Size of memory for ExpRep
+        self.epsilon = 0.05 # Probability of taking a random action
 
     def getFeatureSetSize(self):
         m = 0
@@ -130,20 +135,33 @@ class QLearner(Player):
             if action == ACTION.PLAYCARD:
                 action = self.cardToAction(Card(actionDic['card']), requestList[i].initialCards)
             actionRows += [ACTION.actionToIndexDic[action]]
-        pointsPerState = 0
-        if learnDTO.size > 0:
-            pointsPerState = learnDTO.points/learnDTO.size # Points of game divided equally for each game state that happend in the game
-        yRows = np.repeat([pointsPerState], learnDTO.size) # List of points per action taken for each game state
 
-        self.X = np.append(self.X, np.array(featureRows), axis = 0)
-        self.ACTION = np.append(self.ACTION, np.array(actionRows), axis = 0)
-        self.Y = np.append(self.Y, yRows, axis = 0)
+        yRows = list() # List of rewards to learn
+        for row in featureRows[1:]:
+            # Rj + y * max(Q for all actions of next state [1:])
+            # Target network hack
+            yRows.append(0 + self.lr*max(self.algorithm.predict(row, target=True)[0]))
+        yRows.append(learnDTO.points) # Last action take got the points of the game
 
-        self.learningLoops += 1
-        if self.learnCondition():
-            self.algorithm.learn(self.X, self.ACTION, self.Y, learnScale=(self.X.shape[0] > 500)) # Really learn from dataset
-            self.saveDataset() # Save data for offline learning
-            self.clearDataset() # Clear data for new batches
+        # Experience Replay hack
+        self.X = np.append(featureRows, self.X, axis = 0)
+        self.ACTION = np.append(actionRows, self.ACTION, axis = 0)
+        self.Y = np.append(yRows, self.Y, axis = 0)
+        if self.Y.shape[0] > self.memorySize:
+            diff = self.Y.shape[0] - self.memorySize
+            self.X = self.X[:-diff]
+            self.ACTION = self.ACTION[:-diff]
+            self.Y = self.Y[:-diff]
+            randomTrainIndexes = np.random.randint(0,self.memorySize,diff)
+            self.algorithm.learn(self.X[randomTrainIndexes,:], self.ACTION[randomTrainIndexes], self.Y[randomTrainIndexes])
+            #self.saveDataset(featureRows, actionRows, yRows) # Save data for offline learning
+
+        # Target network hack
+        self.steps += 1
+        if self.C == self.steps:
+            self.algorithm.updateTarget()
+            self.steps = 0
+
         return "OK"
 
     def learnCondition(self):
@@ -168,7 +186,6 @@ class QLearner(Player):
         self.ACTION = np.array([])
         self.Y = np.array([])
 
-
     def getRandomOption(self, requestDTO):
         print "taking random option"
         action = random.choice(requestDTO.possibleActions)
@@ -180,9 +197,4 @@ class QLearner(Player):
         return response
 
     def chooseRandomOption(self):
-        MAX_RANDOM_ITERATIONS = 1000
-        if(self.learningLoops >= MAX_RANDOM_ITERATIONS):
-            return False
-        else:
-            probability = 1 - (self.learningLoops / MAX_RANDOM_ITERATIONS)
-            return random.random() < probability
+        return random.random() < self.epsilon
