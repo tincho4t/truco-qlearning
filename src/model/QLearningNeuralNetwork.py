@@ -16,7 +16,6 @@ class QLearningNeuralNetwork(Model):
 
     def predict(self, X, target=False):
         try:
-            X = np.array(X).reshape(-1, len(X))
             if target:
                 return self.QTarget.predict(X)
             else:

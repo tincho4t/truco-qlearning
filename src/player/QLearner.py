@@ -37,7 +37,7 @@ class QLearner(Player):
         self.C = 1000 # When to update target algorithm
         self.steps = 0 # Current steps from last update of target algorithm
         self.memorySize = 10000 # Size of memory for ExpRep
-        self.trainSize = 1000 # Expe Replay size
+        self.trainSize = 32 # Expe Replay size
         self.epsilon = 0.05 # Probability of taking a random action
         self.loadRandomTestDataset()
 
@@ -118,7 +118,7 @@ class QLearner(Player):
         if(self.chooseRandomOption()):
             return self.getRandomOption(requestDTO)
 
-        yHatVector = self.algorithm.predict(self.getFeatureVector(requestDTO))
+        yHatVector = self.algorithm.predict(np.array(self.getFeatureVector(requestDTO)).reshape(1,-1))
         action = self.getWinningPossibleAction(yHatVector, requestDTO)
         response = ActionTakenDTO()
         if(action in [ACTION.PLAYCARDLOW, ACTION.PLAYCARDMIDDLE, ACTION.PLAYCARDHIGH]):
@@ -149,7 +149,7 @@ class QLearner(Player):
         for row in featureRows[1:]:
             # Rj + y * max(Q for all actions of next state [1:])
             # Target network hack
-            yRows.append(0 + self.lr*max(self.algorithm.predict(row, target=True)[0]))
+            yRows.append(0 + self.lr*max(self.algorithm.predict(np.array(row).reshape(1,-1), target=True)[0]))
         yRows.append(learnDTO.points) # Last action take got the points of the game
 
         # Experience Replay hack
@@ -164,7 +164,7 @@ class QLearner(Player):
         if self.steps % 100 == 0:
             randomTrainIndexes = np.random.randint(0, min(self.memorySize, self.Y.shape[0]), self.trainSize)
             self.algorithm.learn(self.X[randomTrainIndexes,:], self.ACTION[randomTrainIndexes], self.Y[randomTrainIndexes])
-            #self.saveDataset(np.array(featureRows), np.array(actionRows), np.array(yRows), np.array(possibleActionsRows)) # Save data for offline learning
+            # self.saveDataset(np.array(featureRows), np.array(actionRows), np.array(yRows), np.array(possibleActionsRows)) # Save data for offline learning
 
         # Target network hack
         self.steps += 1
