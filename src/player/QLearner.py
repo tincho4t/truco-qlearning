@@ -17,6 +17,7 @@ from api.dto.ActionTakenDTO import ActionTakenDTO
 from api.dto.Action import Action as ACTION
 from api.dto.Card import Card
 from model.QLearningNeuralNetwork import QLearningNeuralNetwork
+from model.QLearningRandomForest import QLearningRandomForest
 
 class QLearner(Player):
     
@@ -29,7 +30,8 @@ class QLearner(Player):
         self.X = np.empty((0,self.m), int) # INPUT of NN (state of game before action)
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
-        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(10,10), outputLayer=15)
+        #self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(10,10), outputLayer=15)
+        self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=10)
         self.cardConverter = SimplifyValueCard()
         self.learningLoops = 0
 
@@ -128,8 +130,9 @@ class QLearner(Player):
             if action == ACTION.PLAYCARD:
                 action = self.cardToAction(Card(actionDic['card']), requestList[i].initialCards)
             actionRows += [ACTION.actionToIndexDic[action]]
-
-        pointsPerState = learnDTO.points/learnDTO.size # Points of game divided equally for each game state that happend in the game
+        pointsPerState = 0
+        if learnDTO.size > 0:
+            pointsPerState = learnDTO.points/learnDTO.size # Points of game divided equally for each game state that happend in the game
         yRows = np.repeat([pointsPerState], learnDTO.size) # List of points per action taken for each game state
 
         self.X = np.append(self.X, np.array(featureRows), axis = 0)
@@ -144,8 +147,7 @@ class QLearner(Player):
         return "OK"
 
     def learnCondition(self):
-        print self.X.shape[0]
-        return self.X.shape[0] > 100
+        return self.X.shape[0] > 1000
 
     def saveDataset(self):
         f = tables.open_file(self.dataFilePath, mode='a')
@@ -178,7 +180,7 @@ class QLearner(Player):
         return response
 
     def chooseRandomOption(self):
-        MAX_RANDOM_ITERATIONS = 100
+        MAX_RANDOM_ITERATIONS = 1000
         if(self.learningLoops >= MAX_RANDOM_ITERATIONS):
             return False
         else:
