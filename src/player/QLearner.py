@@ -39,6 +39,7 @@ class QLearner(Player):
         self.steps = 0 # Current steps from last update of target algorithm
         self.memorySize = 200 # Size of memory for ExpRep
         self.epsilon = 0.05 # Probability of taking a random action
+        self.loadRandomTestDataset()
 
     def getFeatureSetSize(self):
         m = 0
@@ -99,10 +100,16 @@ class QLearner(Player):
             featureVector += adapter.convert(requestDTO)
         return featureVector
 
-    def getWinningPossibleAction(self, predictions, possibleActions):
+    def getPossibleActionIndexes(self, requestDTO):
+        possibleActionsWithCardOrder = self.getPossibleActionsWithCardOrder(requestDTO)
+        return [ACTION.actionToIndexDic[a] for a in possibleActionsWithCardOrder]
+
+    def getWinningPossibleAction(self, predictions, requestDTO):
+        possibleActionsIndexs = self.getPossibleActionIndexes(requestDTO)
+        return self.getWinnerAction(predictions, possibleActionsIndexs)
+    
+    def getWinnerAction(self, predictions, possibleActionsIndexs):
         indexOfSortedPredictions = predictions[0].argsort()[::-1] # Reversed sorted indexes
-        possibleActionsWithCardOrder = self.getPossibleActionsWithCardOrder(possibleActions)
-        possibleActionsIndexs = [ACTION.actionToIndexDic[a] for a in possibleActionsWithCardOrder]
         for index in indexOfSortedPredictions:
             if index in possibleActionsIndexs:
                 return ACTION.actionToStringDic[index]
@@ -123,10 +130,12 @@ class QLearner(Player):
     def learn(self, learnDTO):
         # We add to our train dataset the game that just ended        
         featureRows = list() # List of game states
+        possibleActionsRows = list() # Fixed List of possible action indexes
         requestList = learnDTO.getGameStatusList()
         actionList = learnDTO.getActionList()
         for rDTO in requestList:
             featureRows += [self.getFeatureVector(rDTO)]
+            possibleActionsRows.append(self.fixedPossibleActions(rDTO))
 
         actionRows = list() # List of actions
         for i in range(len(actionList)):
@@ -154,17 +163,18 @@ class QLearner(Player):
             self.Y = self.Y[:-diff]
             randomTrainIndexes = np.random.randint(0,self.memorySize,diff)
             self.algorithm.learn(self.X[randomTrainIndexes,:], self.ACTION[randomTrainIndexes], self.Y[randomTrainIndexes])
-            self.saveDataset(np.array(featureRows), np.array(actionRows), np.array(yRows)) # Save data for offline learning
+            #self.saveDataset(np.array(featureRows), np.array(actionRows), np.array(yRows), np.array(possibleActionsRows)) # Save data for offline learning
 
         # Target network hack
         self.steps += 1
         if self.C == self.steps:
             self.algorithm.updateTarget()
             self.steps = 0
+            self.testConvergence()
 
         return "OK"
 
-    def saveDataset(self, X, ACTION, Y):
+    def saveDataset(self, X, ACTION, Y, POSSIBLE_ACTIONS):
         f = tables.open_file(self.dataFilePath, mode='a')
         # Is this the first time?
         if not "/X" in f:
@@ -173,9 +183,11 @@ class QLearner(Player):
             c_array = f.create_earray(f.root, 'X', atomFloat, (0, X.shape[1]))
             c_array = f.create_earray(f.root, 'ACTION', atom, (0, 1))
             c_array = f.create_earray(f.root, 'Y', atomFloat, (0, 1))
+            c_array = f.create_earray(f.root, 'POSSIBLE_ACTIONS', atomFloat, (0, POSSIBLE_ACTIONS.shape[1]))
         f.root.X.append(X)
         f.root.ACTION.append(ACTION.reshape(-1, 1))
         f.root.Y.append(Y.reshape(-1, 1))
+        f.root.POSSIBLE_ACTIONS.append(POSSIBLE_ACTIONS)
         f.close()
 
     def clearDataset(self):
@@ -184,7 +196,6 @@ class QLearner(Player):
         self.Y = np.array([])
 
     def getRandomOption(self, requestDTO):
-        print "taking random option"
         action = random.choice(requestDTO.possibleActions)
         response = ActionTakenDTO()
         response.setAction(action)
@@ -195,3 +206,38 @@ class QLearner(Player):
 
     def chooseRandomOption(self):
         return random.random() < self.epsilon
+
+
+    #################### TEST CONVERGENCE SECTION ###################
+    def testConvergence(self):
+        newPredictions = self.algorithm.predict(self.testDataset, target=True)
+        actionsPredicted = list()
+        for i in range(newPredictions.shape[0]):
+            p = newPredictions[i]
+            actionsPredicted.append(self.getWinnerAction([p], self.testDatasetPossibleActions[i]))
+        actionsPredicted = np.array(actionsPredicted)
+        print "Porcentaje de cambios", 100 * np.mean(self.lastPredictions != actionsPredicted),"%"
+        self.lastPredictions = actionsPredicted
+
+    def loadRandomTestDataset(self):
+        f = tables.open_file("random_test_convergence.h5")
+        self.testDataset = np.array(f.root.X)
+        
+        self.testDatasetPossibleActions = list()
+        for possibleActions in np.array(f.root.POSSIBLE_ACTIONS):
+            indexes = np.where(possibleActions)[0]
+            # self.testDatasetPossibleActions.append([ACTION.actionToStringDic[i] for i in indexes])
+            self.testDatasetPossibleActions.append(indexes)
+        self.testDatasetPossibleActions = np.array(self.testDatasetPossibleActions)
+
+        self.lastPredictions = np.zeros(self.testDataset.shape[0])
+        f.close()
+
+    def fixedPossibleActions(self, requestDTO):
+        actions = np.zeros(len(ACTION.actionToIndexDic))
+        possibleActionsIndexs = self.getPossibleActionIndexes(requestDTO)
+        for index in possibleActionsIndexs:
+            actions[index] = 1
+        return actions
+
+    #################################################################
