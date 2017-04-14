@@ -10,12 +10,13 @@ class QLearningNeuralNetwork(Model):
     
     def __init__(self, inputLayer, hiddenLayerSizes, outputLayer):
         super(QLearningNeuralNetwork, self).__init__()
-        self.Q = MLPRegressor(warm_start=True, verbose=True, max_iter=100000000, tol=0.00000001, batch_size=10, hidden_layer_sizes=hiddenLayerSizes)
+        self.Q = MLPRegressor(warm_start=True, verbose=True, max_iter=100000000, tol=0.00000001, batch_size=32, hidden_layer_sizes=hiddenLayerSizes)
         self.QTarget = clone(self.Q)
         self.outputLayer = outputLayer
 
     def predict(self, X, target=False):
         try:
+            X = np.array(X).reshape(-1, len(X))
             if target:
                 return self.QTarget.predict(X)
             else:
@@ -25,6 +26,7 @@ class QLearningNeuralNetwork(Model):
             return np.random.rand(1, self.outputLayer)
 
     def updateTarget(self):
+        print("TARGET UPDATED")
         self.QTarget = deepcopy(self.Q)
 
     def learn(self, X, ACTION, Y, learnScale = False):

@@ -30,14 +30,14 @@ class QLearner(Player):
         self.X = np.empty((0,self.m), int) # INPUT of NN (state of game before action)
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
-        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(10,10), outputLayer=15)
+        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(100, 100), outputLayer=15)
         #self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=10)
         self.cardConverter = SimplifyValueCard()
-        self.learningLoops = 0
-        self.lr = 0.01 # LR for reward function
-        self.C = 10 # When to update target algorithm
+        self.lr = 0.8 # LR for reward function
+        self.C = 1000 # When to update target algorithm
         self.steps = 0 # Current steps from last update of target algorithm
-        self.memorySize = 200 # Size of memory for ExpRep
+        self.memorySize = 10000 # Size of memory for ExpRep
+        self.trainSize = 1000 # Expe Replay size
         self.epsilon = 0.05 # Probability of taking a random action
 
     def getFeatureSetSize(self):
@@ -152,13 +152,14 @@ class QLearner(Player):
             self.X = self.X[:-diff]
             self.ACTION = self.ACTION[:-diff]
             self.Y = self.Y[:-diff]
-            randomTrainIndexes = np.random.randint(0,self.memorySize,diff)
+        if self.steps % 100 == 0:
+            randomTrainIndexes = np.random.randint(0, min(self.memorySize, self.Y.shape[0]), self.trainSize)
             self.algorithm.learn(self.X[randomTrainIndexes,:], self.ACTION[randomTrainIndexes], self.Y[randomTrainIndexes])
-            self.saveDataset(np.array(featureRows), np.array(actionRows), np.array(yRows)) # Save data for offline learning
+            #self.saveDataset(np.array(featureRows), np.array(actionRows), np.array(yRows)) # Save data for offline learning
 
         # Target network hack
         self.steps += 1
-        if self.C == self.steps:
+        if self.C < self.steps:
             self.algorithm.updateTarget()
             self.steps = 0
 
