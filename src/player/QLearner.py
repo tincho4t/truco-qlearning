@@ -30,15 +30,15 @@ class QLearner(Player):
         self.X = np.empty((0,self.m), int) # INPUT of NN (state of game before action)
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
-        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(100, 100), outputLayer=15)
+        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(50), outputLayer=15)
         #self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=10)
         self.cardConverter = SimplifyValueCard()
         self.lr = 0.9 # LR for reward function
-        self.C = 500 # When to update target algorithm
+        self.C = 50 # When to update target algorithm
         self.steps = 0 # Current steps from last update of target algorithm
         self.memorySize = 10000 # Size of memory for ExpRep
         self.trainSize = 32 # Expe Replay size
-        self.epsilon = 0.05 # Probability of taking a random action
+        self.epsilon = 0.2 # Probability of taking a random action
         self.loadRandomTestDataset()
 
     def getFeatureSetSize(self):
@@ -161,10 +161,9 @@ class QLearner(Player):
             diff = self.Y.shape[0] - self.memorySize
             self.X = self.X[:-diff]
             self.ACTION = self.ACTION[:-diff]
-            self.Y = self.Y[:-diff]
-        if self.steps % 100 == 0:
-            randomTrainIndexes = np.random.randint(0, min(self.memorySize, self.Y.shape[0]), self.trainSize)
-            self.algorithm.learn(self.X[randomTrainIndexes,:], self.ACTION[randomTrainIndexes], self.Y[randomTrainIndexes])
+            self.Y = self.Y[:-dYiff]
+        randomTrainIndexes = np.random.randint(0, min(self.memorySize, self.Y.shape[0]), self.trainSize)
+        self.algorithm.learn(self.X[randomTrainIndexes,:], self.ACTION[randomTrainIndexes], self.Y[randomTrainIndexes])
             # self.saveDataset(np.array(featureRows), np.array(actionRows), np.array(yRows), np.array(possibleActionsRows)) # Save data for offline learning
 
         # Target network hack
