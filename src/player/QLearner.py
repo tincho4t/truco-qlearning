@@ -33,8 +33,8 @@ class QLearner(Player):
         self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(100, 100), outputLayer=15)
         #self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=10)
         self.cardConverter = SimplifyValueCard()
-        self.lr = 0.8 # LR for reward function
-        self.C = 1000 # When to update target algorithm
+        self.lr = 0.9 # LR for reward function
+        self.C = 500 # When to update target algorithm
         self.steps = 0 # Current steps from last update of target algorithm
         self.memorySize = 10000 # Size of memory for ExpRep
         self.trainSize = 32 # Expe Replay size
@@ -146,11 +146,12 @@ class QLearner(Player):
             actionRows += [ACTION.actionToIndexDic[action]]
 
         yRows = list() # List of rewards to learn
+        r = learnDTO.points/len(featureRows)
         for row in featureRows[1:]:
             # Rj + y * max(Q for all actions of next state [1:])
             # Target network hack
-            yRows.append(0 + self.lr*max(self.algorithm.predict(np.array(row).reshape(1,-1), target=True)[0]))
-        yRows.append(learnDTO.points) # Last action take got the points of the game
+            yRows.append(r + self.lr*max(self.algorithm.predict(np.array(row).reshape(1,-1), target=True)[0]))
+        yRows.append(r) # Last action take got the points of the game
 
         # Experience Replay hack
         self.X = np.append(featureRows, self.X, axis = 0)
