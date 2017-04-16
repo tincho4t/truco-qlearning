@@ -13,6 +13,7 @@ from featureAdapter.CountPossibleActions import CountPossibleActions
 from featureAdapter.RivalCardsUsed import RivalCardsUsed
 from featureAdapter.EnvidoAdapter import EnvidoAdapter
 from featureAdapter.MyEnvidoScore import MyEnvidoScore
+from featureAdapter.ScoreFeature import ScoreFeature
 from api.dto.ActionTakenDTO import ActionTakenDTO
 from api.dto.Action import Action as ACTION
 from api.dto.Card import Card
@@ -25,16 +26,16 @@ class QLearner(Player):
         super(QLearner, self).__init__()
         print "QLearner created!"
         self.dataFilePath = 'data.h5' # Where to save data for offline learning
-        self.adapters = [IAmHand(), CurrentRound(), CountPossibleActions(), CardUsage(), RivalCardsUsed(), EnvidoAdapter(), MyEnvidoScore()]
+        self.adapters = [IAmHand(), CurrentRound(), CountPossibleActions(), CardUsage(), RivalCardsUsed(), EnvidoAdapter(), MyEnvidoScore(), ScoreFeature()]
         self.m = self.getFeatureSetSize() # Sum of all adapter sizes
         self.X = np.empty((0,self.m), int) # INPUT of NN (state of game before action)
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
-        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(100, 100), outputLayer=15)
+        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(50,), outputLayer=15)
         #self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=10)
         self.cardConverter = SimplifyValueCard()
         self.lr = 0.9 # LR for reward function
-        self.C = 500 # When to update target algorithm
+        self.C = 300 # When to update target algorithm
         self.steps = 0 # Current steps from last update of target algorithm
         self.memorySize = 10000 # Size of memory for ExpRep
         self.trainSize = 32 # Expe Replay size
