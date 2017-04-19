@@ -20,6 +20,7 @@ from api.dto.Card import Card
 from model.QLearningNeuralNetwork import QLearningNeuralNetwork
 from model.QLearningRandomForest import QLearningRandomForest
 
+
 class QLearner(Player):
     
     def __init__(self):
@@ -31,23 +32,24 @@ class QLearner(Player):
         self.X = np.empty((0,self.m), int) # INPUT of NN (state of game before action)
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
-        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(50,), outputLayer=15)
-        #self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=10)
+        #self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(100), outputLayer=15)
+        self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=5)
         self.cardConverter = SimplifyValueCard()
-        self.lr = 0.9 # LR for reward function
-        self.C = 300 # When to update target algorithm
+        self.lr = 0.99 # LR for reward function
+        self.C = 100 # When to update target algorithm
         self.steps = 0 # Current steps from last update of target algorithm
-        self.memorySize = 10000 # Size of memory for ExpRep
+        self.memorySize = 1000 # Size of memory for ExpRep
         self.trainSize = 32 # Expe Replay size
-        self.epsilon = 0.2 # Probability of taking a random action
+        self.epsilon = 0.1 # Probability of taking a random action
+        self.doLearn = True
         self.loadRandomTestDataset()
-
+    
     def getFeatureSetSize(self):
         m = 0
         for adapter in self.getAdapters():
             m += adapter.size
         return m
-
+    
     def actionToCard(self, action, initialCards):
         initialCardValues = [self.cardConverter.cardToFeature(c)[0] for c in initialCards]
         initialCardValuesSortedIndex = np.array(initialCardValues).argsort().reshape(-1)
@@ -57,9 +59,9 @@ class QLearner(Player):
             return initialCards[initialCardValuesSortedIndex[1]]
         else:
             return initialCards[initialCardValuesSortedIndex[2]]
-
+    
     def cardToAction(self, card, initialCards):
-        initialCardValues = [self.cardConverter.cardToFeature(c) for c in initialCards]
+        initialCardValues = [self.cardConverter.cardToFeature(c)[0] for c in initialCards]
         initialCardValuesSortedIndex = np.array(initialCardValues).argsort().reshape(-1)
         if card == initialCards[initialCardValuesSortedIndex[0]]:
             return ACTION.PLAYCARDLOW
@@ -67,7 +69,7 @@ class QLearner(Player):
             return ACTION.PLAYCARDMIDDLE
         else:
             return ACTION.PLAYCARDHIGH
-
+    
     def getCardActionsAvailable(self, initialCards, cardsNotPlayed):
         initialCardValues = [self.cardConverter.cardToFeature(c)[0] for c in initialCards]
         initialCardValuesSortedIndex = np.array(initialCardValues).argsort().reshape(-1)
@@ -80,7 +82,7 @@ class QLearner(Player):
             possibleCardActions += [ACTION.PLAYCARDHIGH]
         return possibleCardActions
 
-
+    
     def getPossibleActionsWithCardOrder(self, requestDTO):
         possibleActions = list()
         # Is playcard an action available
@@ -91,32 +93,32 @@ class QLearner(Player):
             if not action == ACTION.PLAYCARD:
                 possibleActions += [action]
         return possibleActions
-
+    
     def getAdapters(self):
         return self.adapters
-
+    
     def getFeatureVector(self, requestDTO):
         featureVector = list()
         for adapter in self.getAdapters():
             featureVector += adapter.convert(requestDTO)
         return featureVector
-
+    
     def getPossibleActionIndexes(self, requestDTO):
         possibleActionsWithCardOrder = self.getPossibleActionsWithCardOrder(requestDTO)
         return [ACTION.actionToIndexDic[a] for a in possibleActionsWithCardOrder]
-
+    
     def getWinningPossibleAction(self, predictions, requestDTO):
         possibleActionsIndexs = self.getPossibleActionIndexes(requestDTO)
         return self.getWinnerAction(predictions, possibleActionsIndexs)
-    
+        
     def getWinnerAction(self, predictions, possibleActionsIndexs):
         indexOfSortedPredictions = predictions[0].argsort()[::-1] # Reversed sorted indexes
         for index in indexOfSortedPredictions:
             if index in possibleActionsIndexs:
                 return ACTION.actionToStringDic[index]
-
+    
     def predict(self, requestDTO):
-        if(self.chooseRandomOption()):
+        if(self.chooseRandomOption() and self.doLearn):
             return self.getRandomOption(requestDTO)
 
         yHatVector = self.algorithm.predict(np.array(self.getFeatureVector(requestDTO)).reshape(1,-1))
@@ -127,55 +129,61 @@ class QLearner(Player):
             action = ACTION.PLAYCARD
         response.setAction(action)
         return response
+    
+    def stopLearning(self):
+        self.doLearn = False
+        print("STOPED LEARNING")
 
     def learn(self, learnDTO):
-        # We add to our train dataset the game that just ended        
-        featureRows = list() # List of game states
-        possibleActionsRows = list() # Fixed List of possible action indexes
-        requestList = learnDTO.getGameStatusList()
-        actionList = learnDTO.getActionList()
-        for rDTO in requestList:
-            featureRows += [self.getFeatureVector(rDTO)]
-            possibleActionsRows.append(self.fixedPossibleActions(rDTO))
+        if self.doLearn:
+            # We add to our train dataset the game that just ended        
+            featureRows = list() # List of game states
+            possibleActionsRows = list() # Fixed List of possible action indexes
+            requestList = learnDTO.getGameStatusList()
+            actionList = learnDTO.getActionList()
+            for rDTO in requestList:
+                featureRows += [self.getFeatureVector(rDTO)]
+                possibleActionsRows.append(self.fixedPossibleActions(rDTO))
 
-        actionRows = list() # List of actions
-        for i in range(len(actionList)):
-            actionDic = actionList[i]
-            action = actionDic['action']
-            if action == ACTION.PLAYCARD:
-                action = self.cardToAction(Card(actionDic['card']), requestList[i].initialCards)
-            actionRows += [ACTION.actionToIndexDic[action]]
+            actionRows = list() # List of actions
+            for i in range(len(actionList)):
+                actionDic = actionList[i]
+                action = actionDic['action']
+                if action == ACTION.PLAYCARD:
+                    action = self.cardToAction(Card(actionDic['card']), requestList[i].initialCards)
+                actionRows += [ACTION.actionToIndexDic[action]]
+            yRows = list() # List of rewards to learn
+            r = 1.0*learnDTO.points/len(featureRows)
+            r /= 30.0 #Normalized
+            for row in featureRows[1:]:
+                # Rj + y * max(Q for all actions of next state [1:])
+                # Target network hack
+                yRows.append(r + self.lr*max(self.algorithm.predict(np.array(row).reshape(1,-1), target=True)[0]))
+            yRows.append(r) # Last action take got the points of the game
 
-        yRows = list() # List of rewards to learn
-        r = learnDTO.points/len(featureRows)
-        for row in featureRows[1:]:
-            # Rj + y * max(Q for all actions of next state [1:])
-            # Target network hack
-            yRows.append(r + self.lr*max(self.algorithm.predict(np.array(row).reshape(1,-1), target=True)[0]))
-        yRows.append(r) # Last action take got the points of the game
-
-        # Experience Replay hack
-        self.X = np.append(featureRows, self.X, axis = 0)
-        self.ACTION = np.append(actionRows, self.ACTION, axis = 0)
-        self.Y = np.append(yRows, self.Y, axis = 0)
-        if self.Y.shape[0] > self.memorySize:
+            # Experience Replay hack
+            self.X = np.append(featureRows, self.X, axis = 0)
+            self.ACTION = np.append(actionRows, self.ACTION, axis = 0)
+            self.Y = np.append(yRows, self.Y, axis = 0)
             diff = self.Y.shape[0] - self.memorySize
-            self.X = self.X[:-diff]
-            self.ACTION = self.ACTION[:-diff]
-            self.Y = self.Y[:-dYiff]
-        randomTrainIndexes = np.random.randint(0, min(self.memorySize, self.Y.shape[0]), self.trainSize)
-        self.algorithm.learn(self.X[randomTrainIndexes,:], self.ACTION[randomTrainIndexes], self.Y[randomTrainIndexes])
-            # self.saveDataset(np.array(featureRows), np.array(actionRows), np.array(yRows), np.array(possibleActionsRows)) # Save data for offline learning
+            if self.Y.shape[0] > self.memorySize:
+                self.X = self.X[:-diff]
+                self.ACTION = self.ACTION[:-diff]
+                self.Y = self.Y[:-diff]
+            if self.steps % 1 == 0:
+                randomTrainIndexes = np.random.randint(0, min(self.memorySize, self.Y.shape[0]), min(self.Y.shape[0], self.trainSize))
+                self.algorithm.learn(self.X[randomTrainIndexes,:], self.ACTION[randomTrainIndexes], self.Y[randomTrainIndexes])
+                # self.saveDataset(np.array(featureRows), np.array(actionRows), np.array(yRows), np.array(possibleActionsRows)) # Save data for offline learning
 
-        # Target network hack
-        self.steps += 1
-        if self.C < self.steps:
-            self.algorithm.updateTarget()
-            self.steps = 0
-            self.testConvergence()
+            # Target network hack
+            self.steps += 1
+            if self.C < self.steps:
+                self.algorithm.updateTarget()
+                self.steps = 0
+                self.testConvergence()
 
         return "OK"
-
+    
     def saveDataset(self, X, ACTION, Y, POSSIBLE_ACTIONS):
         f = tables.open_file(self.dataFilePath, mode='a')
         # Is this the first time?
@@ -191,12 +199,12 @@ class QLearner(Player):
         f.root.Y.append(Y.reshape(-1, 1))
         f.root.POSSIBLE_ACTIONS.append(POSSIBLE_ACTIONS)
         f.close()
-
+    
     def clearDataset(self):
         self.X = np.empty((0,self.m), int)
         self.ACTION = np.array([])
         self.Y = np.array([])
-
+    
     def getRandomOption(self, requestDTO):
         action = random.choice(requestDTO.possibleActions)
         response = ActionTakenDTO()
@@ -205,7 +213,7 @@ class QLearner(Player):
             possibleCards = requestDTO.cardsNotPlayed
             response.setCard(random.choice(possibleCards))
         return response
-
+    
     def chooseRandomOption(self):
         return random.random() < self.epsilon
 
@@ -220,7 +228,7 @@ class QLearner(Player):
         actionsPredicted = np.array(actionsPredicted)
         print "Porcentaje de cambios", 100 * np.mean(self.lastPredictions != actionsPredicted),"%"
         self.lastPredictions = actionsPredicted
-
+    
     def loadRandomTestDataset(self):
         f = tables.open_file("random_test_convergence.h5")
         self.testDataset = np.array(f.root.X)
@@ -234,7 +242,7 @@ class QLearner(Player):
 
         self.lastPredictions = np.zeros(self.testDataset.shape[0])
         f.close()
-
+    
     def fixedPossibleActions(self, requestDTO):
         actions = np.zeros(len(ACTION.actionToIndexDic))
         possibleActionsIndexs = self.getPossibleActionIndexes(requestDTO)

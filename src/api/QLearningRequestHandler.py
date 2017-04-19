@@ -36,6 +36,13 @@ class QLearningRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(response.toDic()))
         return
 
+    def do_DELETE(self):
+        QLearningRequestHandler.player.stopLearning()
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(json.dumps("OK"))
+        return
+
     def do_PUT(self):
         response = QLearningRequestHandler.player.learn(self.getParsedPUTParameters())
         self.send_response(200)
