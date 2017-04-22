@@ -64,6 +64,7 @@ class GameStatusDTO(object):
         self.currentRound = params['current_round']
         self.rounds = params['rounds']
         self.iAmHand = params['i_am_hand']
+        self.trucoLevel = params['truco_level']
         self.envido = Envido(params['envido'])
         if('possible_actions' in params):
             self.possibleActions = params['possible_actions']
@@ -79,6 +80,9 @@ class GameStatusDTO(object):
         for card in rawCards:
             cards.append(Card(card))
         return cards
+
+    def getPossibleActions(self):
+        return self.possibleActions
 
     def getScore(self):
         return self.score
@@ -97,4 +101,7 @@ class GameStatusDTO(object):
 
     def getEnvido(self):
         return self.envido
+
+    def getTrucoLevel(self):
+        return self.trucoLevel
 
