@@ -14,6 +14,8 @@ from featureAdapter.RivalCardsUsed import RivalCardsUsed
 from featureAdapter.EnvidoAdapter import EnvidoAdapter
 from featureAdapter.MyEnvidoScore import MyEnvidoScore
 from featureAdapter.ScoreFeature import ScoreFeature
+from featureAdapter.TrucoLevel import TrucoLevel
+from featureAdapter.PossibleActionsBitMap import PossibleActionsBitMap
 from api.dto.ActionTakenDTO import ActionTakenDTO
 from api.dto.Action import Action as ACTION
 from api.dto.Card import Card
@@ -27,16 +29,16 @@ class QLearner(Player):
         super(QLearner, self).__init__()
         print "QLearner created!"
         self.dataFilePath = 'data.h5' # Where to save data for offline learning
-        self.adapters = [IAmHand(), CurrentRound(), CountPossibleActions(), CardUsage(), RivalCardsUsed(), EnvidoAdapter(), MyEnvidoScore(), ScoreFeature()]
+        self.adapters = [IAmHand(), TrucoLevel(), PossibleActionsBitMap() ,CurrentRound(), CountPossibleActions(), CardUsage(), RivalCardsUsed(), EnvidoAdapter(), MyEnvidoScore(), ScoreFeature()]
         self.m = self.getFeatureSetSize() # Sum of all adapter sizes
         self.X = np.empty((0,self.m), int) # INPUT of NN (state of game before action)
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
-        #self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(100), outputLayer=15)
-        self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=5)
+        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(50), outputLayer=15)
+        #self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=5)
         self.cardConverter = SimplifyValueCard()
         self.lr = 0.99 # LR for reward function
-        self.C = 100 # When to update target algorithm
+        self.C = 10 # When to update target algorithm
         self.steps = 0 # Current steps from last update of target algorithm
         self.memorySize = 1000 # Size of memory for ExpRep
         self.trainSize = 32 # Expe Replay size
@@ -128,6 +130,11 @@ class QLearner(Player):
             response.setCard(self.actionToCard(action, requestDTO.initialCards))
             action = ACTION.PLAYCARD
         response.setAction(action)
+        if self.steps % 10 == 0:
+            print(yHatVector)
+            print(yHatVector.mean())            
+            print(yHatVector.argmax())
+            print(action)
         return response
     
     def stopLearning(self):
@@ -155,6 +162,9 @@ class QLearner(Player):
             yRows = list() # List of rewards to learn
             r = 1.0*learnDTO.points/len(featureRows)
             r /= 30.0 #Normalized
+            # Be more conservative
+            if r>0:
+                r*=0.05
             for row in featureRows[1:]:
                 # Rj + y * max(Q for all actions of next state [1:])
                 # Target network hack
