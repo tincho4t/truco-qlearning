@@ -135,6 +135,7 @@ class QLearner(Player):
             print(yHatVector.mean())            
             print(yHatVector.argmax())
             print(action)
+            print(np.array(self.getFeatureVector(requestDTO)).reshape(1,-1))
         return response
     
     def stopLearning(self):
