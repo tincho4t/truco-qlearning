@@ -28,11 +28,12 @@ class EnvidoAdapter(object):
         	envF += envidoConverted
         	i -= 1
         for j in range(0,i):
-        	envF += [0,0,0,0]
+        	envF += [1,0,0,0]
         return envF
 
     def envidoToIndex(self, envido):
     	return {
+            "Nothing": 0,
     		"Envido": 1,
     		"RealEnvido": 2,
     		"FaltaEnvido": 3
