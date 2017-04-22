@@ -43,6 +43,7 @@ class QLearner(Player):
         self.memorySize = 1000 # Size of memory for ExpRep
         self.trainSize = 32 # Expe Replay size
         self.epsilon = 0.05 + 2 # Probability of taking a random action
+        self.doLearn = True
         #self.loadRandomTestDataset()
 
     def getFeatureSetSize(self):
