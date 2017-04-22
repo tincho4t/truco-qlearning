@@ -10,10 +10,11 @@ class QLearningNeuralNetwork(Model):
     
     def __init__(self, inputLayer, hiddenLayerSizes, outputLayer):
         super(QLearningNeuralNetwork, self).__init__()
-        self.Q = MLPRegressor(warm_start=True, verbose=True, max_iter=100000000, tol=0.00000001, solver='sgd', learning_rate_init=0.0001, learning_rate='constant',batch_size=32, hidden_layer_sizes=hiddenLayerSizes)
+        self.Q = MLPRegressor(warm_start=True, max_iter=5, verbose=1, tol=-1, solver='sgd', alpha=0.01 ,learning_rate_init=0.00001, learning_rate='constant', batch_size=32, hidden_layer_sizes=hiddenLayerSizes)
         self.QTarget = clone(self.Q)
         self.outputLayer = outputLayer
 
+    
     def predict(self, X, target=False):
         try:
             if target:
@@ -21,17 +22,16 @@ class QLearningNeuralNetwork(Model):
             else:
                 return self.Q.predict(X) # Vector with estimated points for all actions
         except NotFittedError as e:
-            print("First iteration")
             return np.random.rand(1, self.outputLayer)
-
+    
     def updateTarget(self):
         print("TARGET UPDATED")
         self.QTarget = deepcopy(self.Q)
-
+    
     def learn(self, X, ACTION, Y, learnScale = False):
         Y_LEARN = self.getYOnlyForActionTaken(X, ACTION, Y)
         self.Q.fit(X, Y_LEARN)
-
+    
     def getYOnlyForActionTaken(self, X, ACTION, Y):
         predictionRows = list()
         for i in range(X.shape[0]):
