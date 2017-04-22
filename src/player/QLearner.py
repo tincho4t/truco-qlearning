@@ -34,7 +34,7 @@ class QLearner(Player):
         self.X = np.empty((0,self.m), int) # INPUT of NN (state of game before action)
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
-        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(50), outputLayer=15)
+        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(100), outputLayer=15)
         #self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=5)
         self.cardConverter = SimplifyValueCard()
         self.lr = 0.99 # LR for reward function
@@ -117,6 +117,7 @@ class QLearner(Player):
         indexOfSortedPredictions = predictions[0].argsort()[::-1] # Reversed sorted indexes
         for index in indexOfSortedPredictions:
             if index in possibleActionsIndexs:
+                print(index)
                 return ACTION.actionToStringDic[index]
     
     def predict(self, requestDTO):
@@ -130,12 +131,6 @@ class QLearner(Player):
             response.setCard(self.actionToCard(action, requestDTO.initialCards))
             action = ACTION.PLAYCARD
         response.setAction(action)
-        if self.steps % 10 == 0:
-            print(yHatVector)
-            print(yHatVector.mean())            
-            print(yHatVector.argmax())
-            print(action)
-            print(np.array(self.getFeatureVector(requestDTO)).reshape(1,-1))
         return response
     
     def stopLearning(self):
@@ -161,15 +156,15 @@ class QLearner(Player):
                     action = self.cardToAction(Card(actionDic['card']), requestList[i].initialCards)
                 actionRows += [ACTION.actionToIndexDic[action]]
             yRows = list() # List of rewards to learn
-            r = 1.0*learnDTO.points/len(featureRows)
+            r = 1.0*learnDTO.points
             r /= 30.0 #Normalized
             # Be more conservative
             if r>0:
-                r*=0.05
+                r*=0.5
             for row in featureRows[1:]:
                 # Rj + y * max(Q for all actions of next state [1:])
                 # Target network hack
-                yRows.append(r + self.lr*max(self.algorithm.predict(np.array(row).reshape(1,-1), target=True)[0]))
+                yRows.append(0 + self.lr*max(self.algorithm.predict(np.array(row).reshape(1,-1), target=True)[0]))
             yRows.append(r) # Last action take got the points of the game
 
             # Experience Replay hack
