@@ -34,7 +34,7 @@ class QLearner(Player):
         self.X = np.empty((0,self.m), int) # INPUT of NN (state of game before action)
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
-        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(50), outputLayer=15)
+        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(2), outputLayer=15)
         #self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=5)
         self.cardConverter = SimplifyValueCard()
         self.lr = 0.99 # LR for reward function
@@ -142,56 +142,27 @@ class QLearner(Player):
         print("STOPED LEARNING")
 
     def learn(self, learnDTO):
-        if self.doLearn:
-            # We add to our train dataset the game that just ended        
-            featureRows = list() # List of game states
-            possibleActionsRows = list() # Fixed List of possible action indexes
-            requestList = learnDTO.getGameStatusList()
-            actionList = learnDTO.getActionList()
-            for rDTO in requestList:
-                featureRows += [self.getFeatureVector(rDTO)]
-                possibleActionsRows.append(self.fixedPossibleActions(rDTO))
+        # We add to our train dataset the game that just ended        
+        featureRows = list() # List of game states
+        possibleActionsRows = list() # Fixed List of possible action indexes
+        requestList = learnDTO.getGameStatusList()
+        actionList = learnDTO.getActionList()
+        for rDTO in requestList:
+            featureRows += [self.getFeatureVector(rDTO)]
+            possibleActionsRows.append(self.fixedPossibleActions(rDTO))
 
-            actionRows = list() # List of actions
-            for i in range(len(actionList)):
-                actionDic = actionList[i]
-                action = actionDic['action']
-                if action == ACTION.PLAYCARD:
-                    action = self.cardToAction(Card(actionDic['card']), requestList[i].initialCards)
-                actionRows += [ACTION.actionToIndexDic[action]]
-            yRows = list() # List of rewards to learn
-            r = 1.0*learnDTO.points/len(featureRows)
-            r /= 30.0 #Normalized
-            # Be more conservative
-            if r>0:
-                r*=0.05
-            for row in featureRows[1:]:
-                # Rj + y * max(Q for all actions of next state [1:])
-                # Target network hack
-                yRows.append(r + self.lr*max(self.algorithm.predict(np.array(row).reshape(1,-1), target=True)[0]))
-            yRows.append(r) # Last action take got the points of the game
-
+        actionRows = list() # List of actions
+        for i in range(len(actionList)):
+            actionDic = actionList[i]
+            action = actionDic['action']
+            if action == ACTION.PLAYCARD:
+                action = self.cardToAction(Card(actionDic['card']), requestList[i].initialCards)
+            actionRows += [ACTION.actionToIndexDic[action]]
         yRows = list() # List of rewards to learn
-        r = learnDTO.points/len(featureRows)
-        for row in featureRows[1:]:
-            # Rj + y * max(Q for all actions of next state [1:])
-            # Target network hack
-            #yRows.append(0 + self.lr*max(self.algorithm.predict(np.array(row).reshape(1,-1), target=True)[0]))
-            yRows.append(0)
-        yRows.append(learnDTO.points) # Last action take got the points of the game
-
-        # Experience Replay hack
-        self.X = np.append(featureRows, self.X, axis = 0)
-        self.ACTION = np.append(actionRows, self.ACTION, axis = 0)
-        self.Y = np.append(yRows, self.Y, axis = 0)
-        if self.Y.shape[0] > self.memorySize:
-            diff = self.Y.shape[0] - self.memorySize
-            self.X = self.X[:-diff]
-            self.ACTION = self.ACTION[:-diff]
-            self.Y = self.Y[:-diff]
-        # if self.steps % 100 == 0:
-        #     randomTrainIndexes = np.random.randint(0, min(self.memorySize, self.Y.shape[0]), self.trainSize)
-        #     self.algorithm.learn(self.X[randomTrainIndexes,:], self.ACTION[randomTrainIndexes], self.Y[randomTrainIndexes])
+        r = 1.0*learnDTO.points/len(featureRows)
+        r /= 30.0 #Normalized
+        for Irow in range(len(featureRows)):
+            yRows.append(r)
 
         self.saveDataset(np.array(featureRows), np.array(actionRows), np.array(yRows), np.array(possibleActionsRows)) # Save data for offline learning
         # Target network hack
