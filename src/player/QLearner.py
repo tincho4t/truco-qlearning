@@ -130,11 +130,6 @@ class QLearner(Player):
             response.setCard(self.actionToCard(action, requestDTO.initialCards))
             action = ACTION.PLAYCARD
         response.setAction(action)
-        if self.steps % 10 == 0:
-            print(yHatVector)
-            print(yHatVector.mean())            
-            print(yHatVector.argmax())
-            print(action)
         return response
     
     def stopLearning(self):
