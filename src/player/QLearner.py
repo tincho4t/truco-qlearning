@@ -229,10 +229,10 @@ class QLearner(Player):
         f.close()
     
     def fixedPossibleActions(self, requestDTO):
-        actions = np.zeros(len(ACTION.actionToIndexDic))
+        actions = np.repeat(False,len(ACTION.actionToIndexDic))
         possibleActionsIndexs = self.getPossibleActionIndexes(requestDTO)
         for index in possibleActionsIndexs:
-            actions[index] = 1
+            actions[index] = True
         return actions
 
     #################################################################
