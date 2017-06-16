@@ -1,4 +1,5 @@
 from Player import Player
+import math
 import sys
 import random
 import numpy as np
@@ -21,6 +22,7 @@ from api.dto.Action import Action as ACTION
 from api.dto.Card import Card
 from model.QLearningNeuralNetwork import QLearningNeuralNetwork
 from model.QLearningRandomForest import QLearningRandomForest
+from model.QLearningSGDRegressor import QLearningSGDRegressor
 
 
 class QLearner(Player):
@@ -34,15 +36,19 @@ class QLearner(Player):
         self.X = np.empty((0,self.m), int) # INPUT of NN (state of game before action)
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
-        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(100), outputLayer=15)
+        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(80), outputLayer=15)
         #self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=5)
+        #self.algorithm = QLearningSGDRegressor()
         self.cardConverter = SimplifyValueCard()
         self.lr = 0.99 # LR for reward function
-        self.C = 10 # When to update target algorithm
+        self.C = 1000 # When to update target algorithm
         self.steps = 0 # Current steps from last update of target algorithm
         self.memorySize = 1000 # Size of memory for ExpRep
         self.trainSize = 32 # Expe Replay size
-        self.epsilon = 0.1 # Probability of taking a random action
+        self.epsilon = 1 # Probability of taking a random action
+        self.epsilon_descent = 0.1 # Decrese every N learning steps
+        self.epsilon_minimum = 0.1 # Minimum epslion
+        self.epsilonIterations = 0
         self.doLearn = True
         self.loadRandomTestDataset()
     
@@ -117,7 +123,6 @@ class QLearner(Player):
         indexOfSortedPredictions = predictions[0].argsort()[::-1] # Reversed sorted indexes
         for index in indexOfSortedPredictions:
             if index in possibleActionsIndexs:
-                print(index)
                 return ACTION.actionToStringDic[index]
     
     def predict(self, requestDTO):
@@ -158,13 +163,16 @@ class QLearner(Player):
             yRows = list() # List of rewards to learn
             r = 1.0*learnDTO.points
             r /= 30.0 #Normalized
-            # Be more conservative
-            if r>0:
-                r*=0.5
-            for row in featureRows[1:]:
+                
+            doPrint = np.random.rand(1) < 0.005
+            for Irow in range(1,len(featureRows)):
                 # Rj + y * max(Q for all actions of next state [1:])
                 # Target network hack
-                yRows.append(0 + self.lr*max(self.algorithm.predict(np.array(row).reshape(1,-1), target=True)[0]))
+                row = featureRows[Irow]
+                possibleActions = possibleActionsRows[Irow]
+                if doPrint:
+                    print(self.algorithm.predict(np.array(row).reshape(1,-1), target=True)[0].argsort()[possibleActions])
+                yRows.append(0 + self.lr*max(self.algorithm.predict(np.array(row).reshape(1,-1), target=True)[0][possibleActions]))
             yRows.append(r) # Last action take got the points of the game
 
             # Experience Replay hack
@@ -181,6 +189,17 @@ class QLearner(Player):
                 self.algorithm.learn(self.X[randomTrainIndexes,:], self.ACTION[randomTrainIndexes], self.Y[randomTrainIndexes])
                 # self.saveDataset(np.array(featureRows), np.array(actionRows), np.array(yRows), np.array(possibleActionsRows)) # Save data for offline learning
 
+            # Lower epsilon
+            if self.epsilonIterations > 500:
+                newEpslion = self.epsilon*(1-self.epsilon_descent)
+                print("EPSILON: ",newEpslion)
+                if newEpslion > self.epsilon_minimum:
+                    self.epsilon = newEpslion
+                else:
+                    self.epsilon = self.epsilon_minimum
+                self.epsilonIterations = 0
+            else:
+                self.epsilonIterations += 1
             # Target network hack
             self.steps += 1
             if self.C < self.steps:
@@ -239,6 +258,12 @@ class QLearner(Player):
         f = tables.open_file("random_test_convergence.h5")
         self.testDataset = np.array(f.root.X)
         
+        n = self.testDataset.shape[0]
+        y = np.zeros((n,15))
+        for i in range(10):
+            self.algorithm.Q = self.algorithm.Q.fit(self.testDataset, y)
+            self.algorithm.QTarget = self.algorithm.QTarget.fit(self.testDataset, y)
+
         self.testDatasetPossibleActions = list()
         for possibleActions in np.array(f.root.POSSIBLE_ACTIONS):
             indexes = np.where(possibleActions)[0]
@@ -250,10 +275,10 @@ class QLearner(Player):
         f.close()
     
     def fixedPossibleActions(self, requestDTO):
-        actions = np.zeros(len(ACTION.actionToIndexDic))
+        actions = np.repeat(False,len(ACTION.actionToIndexDic))
         possibleActionsIndexs = self.getPossibleActionIndexes(requestDTO)
         for index in possibleActionsIndexs:
-            actions[index] = 1
+            actions[index] = True
         return actions
 
     #################################################################
