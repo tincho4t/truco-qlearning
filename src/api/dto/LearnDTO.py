@@ -9,7 +9,7 @@ class LearnDTO(object):
 		super(LearnDTO, self).__init__()
 		self.gameStatusList = []
 		self.actionList = []
-		for row in dic['hand_hystory']:
+		for row in dic['hand_history']:
 			self.gameStatusList.append(GameStatusDTO(row['gameStatus']))
 			self.actionList.append(row['action'])
 		self.size = len(self.gameStatusList)
