@@ -10,7 +10,7 @@ class QLearningNeuralNetwork(Model):
     
     def __init__(self, inputLayer, hiddenLayerSizes, outputLayer):
         super(QLearningNeuralNetwork, self).__init__()
-        self.Q = MLPRegressor(warm_start=True, max_iter=5, verbose=0, tol=-1, solver='sgd', alpha=0.001 ,learning_rate_init=0.001, learning_rate='constant', batch_size=32, hidden_layer_sizes=hiddenLayerSizes)
+        self.Q = MLPRegressor(warm_start=True, max_iter=5, verbose=0, tol=-1, solver='sgd', alpha=0.001 ,learning_rate_init=0.00001, learning_rate='constant', batch_size=32, hidden_layer_sizes=hiddenLayerSizes)
         self.QTarget = clone(self.Q)
         self.outputLayer = outputLayer
 

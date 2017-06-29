@@ -36,7 +36,7 @@ class QLearner(Player):
         self.X = np.empty((0,self.m), int) # INPUT of NN (state of game before action)
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
-        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(80), outputLayer=15)
+        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(100,50), outputLayer=15)
         #self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=5)
         #self.algorithm = QLearningSGDRegressor()
         self.cardConverter = SimplifyValueCard()
@@ -142,6 +142,11 @@ class QLearner(Player):
         self.doLearn = False
         print("STOPED LEARNING")
 
+    def printActionStats(self, possibleActions, preds):
+        indexes = np.where(possibleActions)[0]
+        for i in indexes:
+            print(ACTION.actionToStringDic[i],preds[i])
+
     def learn(self, learnDTO):
         if self.doLearn:
             # We add to our train dataset the game that just ended        
@@ -164,14 +169,20 @@ class QLearner(Player):
             r = 1.0*learnDTO.points
             r /= 30.0 #Normalized
                 
-            doPrint = np.random.rand(1) < 0.005
+            doPrint = np.random.rand(1) < 0.001
+            if doPrint:
+                row = featureRows[0]
+                possibleActions = possibleActionsRows[0]
+                preds = self.algorithm.predict(np.array(row).reshape(1,-1), target=True)[0]
+                self.printActionStats(possibleActions, preds)
             for Irow in range(1,len(featureRows)):
                 # Rj + y * max(Q for all actions of next state [1:])
                 # Target network hack
                 row = featureRows[Irow]
                 possibleActions = possibleActionsRows[Irow]
                 if doPrint:
-                    print(self.algorithm.predict(np.array(row).reshape(1,-1), target=True)[0].argsort()[possibleActions])
+                    preds = self.algorithm.predict(np.array(row).reshape(1,-1), target=True)[0]
+                    self.printActionStats(possibleActions, preds)
                 yRows.append(0 + self.lr*max(self.algorithm.predict(np.array(row).reshape(1,-1), target=True)[0][possibleActions]))
             yRows.append(r) # Last action take got the points of the game
 
@@ -190,7 +201,7 @@ class QLearner(Player):
                 # self.saveDataset(np.array(featureRows), np.array(actionRows), np.array(yRows), np.array(possibleActionsRows)) # Save data for offline learning
 
             # Lower epsilon
-            if self.epsilonIterations > 500:
+            if self.epsilonIterations > 10000:
                 newEpslion = self.epsilon*(1-self.epsilon_descent)
                 print("EPSILON: ",newEpslion)
                 if newEpslion > self.epsilon_minimum:
