@@ -1,3 +1,4 @@
+from sklearn.externals import joblib
 from Player import Player
 import math
 import sys
@@ -252,6 +253,10 @@ class QLearner(Player):
     
     def chooseRandomOption(self):
         return random.random() < self.epsilon
+
+    def save(self, filePath):
+        joblib.dump(self.QLearningNeuralNetwork.Q, filePath+"_Q.pkl")
+        joblib.dump(self.QLearningNeuralNetwork.QTarget, filePath+"_QTarget.pkl")
 
 
     #################### TEST CONVERGENCE SECTION ###################

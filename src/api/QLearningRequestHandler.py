@@ -29,6 +29,9 @@ class QLearningRequestHandler(BaseHTTPRequestHandler):
     def getParsedPUTParameters(self):
         return LearnDTO(self.getBodyParameters())
 
+    def getParsedSAVEParameters(self):
+        return self.getBodyParameters()['file']
+
     def do_POST(self):
         response = QLearningRequestHandler.player.play(self.getParsedPOSTParameters())
         self.send_response(200)
@@ -45,6 +48,13 @@ class QLearningRequestHandler(BaseHTTPRequestHandler):
 
     def do_PUT(self):
         response = QLearningRequestHandler.player.learn(self.getParsedPUTParameters())
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(json.dumps("OK"))
+        return
+
+    def do_SAVE(self):
+        response = QLearningRequestHandler.player.save(self.getParsedSaveParameters())
         self.send_response(200)
         self.end_headers()
         self.wfile.write(json.dumps("OK"))
