@@ -1,4 +1,6 @@
+from sklearn.externals import joblib
 from Player import Player
+import math
 import sys
 import random
 import numpy as np
@@ -16,11 +18,13 @@ from featureAdapter.MyEnvidoScore import MyEnvidoScore
 from featureAdapter.ScoreFeature import ScoreFeature
 from featureAdapter.TrucoLevel import TrucoLevel
 from featureAdapter.PossibleActionsBitMap import PossibleActionsBitMap
+from featureAdapter.HandsWon import HandsWon
 from api.dto.ActionTakenDTO import ActionTakenDTO
 from api.dto.Action import Action as ACTION
 from api.dto.Card import Card
 from model.QLearningNeuralNetwork import QLearningNeuralNetwork
 from model.QLearningRandomForest import QLearningRandomForest
+from model.QLearningSGDRegressor import QLearningSGDRegressor
 
 
 class QLearner(Player):
@@ -29,20 +33,24 @@ class QLearner(Player):
         super(QLearner, self).__init__()
         print "QLearner created!"
         self.dataFilePath = 'data.h5' # Where to save data for offline learning
-        self.adapters = [IAmHand(), TrucoLevel(), PossibleActionsBitMap() ,CurrentRound(), CountPossibleActions(), CardUsage(), RivalCardsUsed(), EnvidoAdapter(), MyEnvidoScore(), ScoreFeature()]
+        self.adapters = [HandsWon()]
         self.m = self.getFeatureSetSize() # Sum of all adapter sizes
         self.X = np.empty((0,self.m), int) # INPUT of NN (state of game before action)
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
-        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(2), outputLayer=15)
+        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(100,50), outputLayer=15)
         #self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=5)
+        #self.algorithm = QLearningSGDRegressor()
         self.cardConverter = SimplifyValueCard()
         self.lr = 0.99 # LR for reward function
-        self.C = 10 # When to update target algorithm
+        self.C = 1000 # When to update target algorithm
         self.steps = 0 # Current steps from last update of target algorithm
         self.memorySize = 1000 # Size of memory for ExpRep
         self.trainSize = 32 # Expe Replay size
-        self.epsilon = 0.05 + 2 # Probability of taking a random action
+        self.epsilon = 1 # Probability of taking a random action
+        self.epsilon_descent = 0.1 # Decrese every N learning steps
+        self.epsilon_minimum = 0.1 # Minimum epslion
+        self.epsilonIterations = 0
         self.doLearn = True
         #self.loadRandomTestDataset()
 
@@ -136,6 +144,11 @@ class QLearner(Player):
         self.doLearn = False
         print("STOPED LEARNING")
 
+    def printActionStats(self, possibleActions, preds):
+        indexes = np.where(possibleActions)[0]
+        for i in indexes:
+            print(ACTION.actionToStringDic[i],preds[i])
+
     def learn(self, learnDTO):
         # We add to our train dataset the game that just ended        
         featureRows = list() # List of game states
@@ -146,18 +159,33 @@ class QLearner(Player):
             featureRows += [self.getFeatureVector(rDTO)]
             possibleActionsRows.append(self.fixedPossibleActions(rDTO))
 
-        actionRows = list() # List of actions
-        for i in range(len(actionList)):
-            actionDic = actionList[i]
-            action = actionDic['action']
-            if action == ACTION.PLAYCARD:
-                action = self.cardToAction(Card(actionDic['card']), requestList[i].initialCards)
-            actionRows += [ACTION.actionToIndexDic[action]]
-        yRows = list() # List of rewards to learn
-        r = 1.0*learnDTO.points/len(featureRows)
-        r /= 30.0 #Normalized
-        for Irow in range(len(featureRows)):
-            yRows.append(r)
+            actionRows = list() # List of actions
+            for i in range(len(actionList)):
+                actionDic = actionList[i]
+                action = actionDic['action']
+                if action == ACTION.PLAYCARD:
+                    action = self.cardToAction(Card(actionDic['card']), requestList[i].initialCards)
+                actionRows += [ACTION.actionToIndexDic[action]]
+            yRows = list() # List of rewards to learn
+            r = 1.0*learnDTO.points
+            r /= 30.0 #Normalized
+                
+            doPrint = np.random.rand(1) < 0.001
+            if doPrint:
+                row = featureRows[0]
+                possibleActions = possibleActionsRows[0]
+                preds = self.algorithm.predict(np.array(row).reshape(1,-1), target=True)[0]
+                self.printActionStats(possibleActions, preds)
+            for Irow in range(1,len(featureRows)):
+                # Rj + y * max(Q for all actions of next state [1:])
+                # Target network hack
+                row = featureRows[Irow]
+                possibleActions = possibleActionsRows[Irow]
+                if doPrint:
+                    preds = self.algorithm.predict(np.array(row).reshape(1,-1), target=True)[0]
+                    self.printActionStats(possibleActions, preds)
+                yRows.append(0 + self.lr*max(self.algorithm.predict(np.array(row).reshape(1,-1), target=True)[0][possibleActions]))
+            yRows.append(r) # Last action take got the points of the game
 
         self.saveDataset(np.array(featureRows), np.array(actionRows), np.array(yRows), np.array(possibleActionsRows)) # Save data for offline learning
         # Target network hack
@@ -202,6 +230,10 @@ class QLearner(Player):
     def chooseRandomOption(self):
         return random.random() < self.epsilon
 
+    def save(self, filePath):
+        joblib.dump(self.QLearningNeuralNetwork.Q, filePath+"_Q.pkl")
+        joblib.dump(self.QLearningNeuralNetwork.QTarget, filePath+"_QTarget.pkl")
+
 
     #################### TEST CONVERGENCE SECTION ###################
     def testConvergence(self):
@@ -218,6 +250,12 @@ class QLearner(Player):
         f = tables.open_file("random_test_convergence.h5")
         self.testDataset = np.array(f.root.X)
         
+        n = self.testDataset.shape[0]
+        y = np.zeros((n,15))
+        for i in range(10):
+            self.algorithm.Q = self.algorithm.Q.fit(self.testDataset, y)
+            self.algorithm.QTarget = self.algorithm.QTarget.fit(self.testDataset, y)
+
         self.testDatasetPossibleActions = list()
         for possibleActions in np.array(f.root.POSSIBLE_ACTIONS):
             indexes = np.where(possibleActions)[0]
