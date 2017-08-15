@@ -1,4 +1,5 @@
 from SimplifyValueCard import SimplifyValueCard
+from api.dto.Card import Card
 
 """
     Define wich hands are won and loose.
@@ -18,8 +19,9 @@ class HandsWon(object):
         for i in range(len(rounds)):
             if self.apply(rounds, i):
                 winIndex = self.hoWonIndex(rounds[i])
-                feature[2*i] = 1 # On the round
-                feature[2*i + winIndex] = 1 # On Win, Tie or Loose bit.
+                print "winIndex: ", winIndex
+                feature[4*i] = 1 # On the round
+                feature[4*i + winIndex] = 1 # On Win, Tie or Loose bit.
         print "feature: ", feature
         return feature
 	
@@ -27,8 +29,8 @@ class HandsWon(object):
         return i < 2 and "opponent_card_played" in rounds[i] and "my_card_played" in rounds[i]
 
     def hoWonIndex(self, round):
-        myCardValue = self.cardConverter.cardToFeature(round["my_card_played"])[0]
-        opponetCardValue = self.cardConverter.cardToFeature(round["opponent_card_played"])[0]
+        myCardValue = self.cardConverter.cardToFeature(Card(round["my_card_played"]))[0]
+        opponetCardValue = self.cardConverter.cardToFeature(Card(round["opponent_card_played"]))[0]
         if(myCardValue > opponetCardValue):
             return 1
         elif(myCardValue == opponetCardValue):
