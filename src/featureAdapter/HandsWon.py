@@ -1,4 +1,7 @@
 from SimplifyValueCard import SimplifyValueCard
+import sys
+sys.path.insert(0, '../api/dto')
+from api.dto.Card import Card
 
 """
     Define wich hands are won and loose.
@@ -27,14 +30,11 @@ class HandsWon(object):
         return i < 2 and "opponent_card_played" in rounds[i] and "my_card_played" in rounds[i]
 
     def hoWonIndex(self, round):
-        myCardValue = self.cardConverter.cardToFeature(round["my_card_played"])[0]
-        opponetCardValue = self.cardConverter.cardToFeature(round["opponent_card_played"])[0]
+        myCardValue = self.cardConverter.cardToFeature(Card(round["my_card_played"]))[0]
+        opponetCardValue = self.cardConverter.cardToFeature(Card(round["opponent_card_played"]))[0]
         if(myCardValue > opponetCardValue):
             return 1
         elif(myCardValue == opponetCardValue):
             return 2
         else:
             return 3
-
-
-        
