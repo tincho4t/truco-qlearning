@@ -1,4 +1,6 @@
 from SimplifyValueCard import SimplifyValueCard
+import sys
+sys.path.insert(0, '../api/dto')
 from api.dto.Card import Card
 
 """
@@ -19,12 +21,11 @@ class HandsWon(object):
         for i in range(len(rounds)):
             if self.apply(rounds, i):
                 winIndex = self.hoWonIndex(rounds[i])
-                print "winIndex: ", winIndex
-                feature[4*i] = 1 # On the round
-                feature[4*i + winIndex] = 1 # On Win, Tie or Loose bit.
+                feature[2*i] = 1 # On the round
+                feature[2*i + winIndex] = 1 # On Win, Tie or Loose bit.
         print "feature: ", feature
         return feature
-	
+    
     def apply(self, rounds, i):
         return i < 2 and "opponent_card_played" in rounds[i] and "my_card_played" in rounds[i]
 
@@ -37,6 +38,3 @@ class HandsWon(object):
             return 2
         else:
             return 3
-
-
-        
