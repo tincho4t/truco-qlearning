@@ -15,7 +15,6 @@ class HandsWon(object):
         self.cardConverter = SimplifyValueCard()
     
     def convert(self, requestDTO):
-        print requestDTO.rounds
         feature = [0,0,0,0,0,0,0,0]
         rounds = requestDTO.rounds
         for i in range(len(rounds)):
@@ -23,7 +22,6 @@ class HandsWon(object):
                 winIndex = self.hoWonIndex(rounds[i])
                 feature[2*i] = 1 # On the round
                 feature[2*i + winIndex] = 1 # On Win, Tie or Loose bit.
-        print "feature: ", feature
         return feature
     
     def apply(self, rounds, i):

@@ -38,7 +38,7 @@ class QLearner(Player):
         self.X = np.empty((0,self.m), int) # INPUT of NN (state of game before action)
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
-        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(100,50), outputLayer=15)
+        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(200), outputLayer=15)
         #self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=5)
         #self.algorithm = QLearningSGDRegressor()
         self.cardConverter = SimplifyValueCard()
@@ -256,8 +256,8 @@ class QLearner(Player):
         return random.random() < self.epsilon
 
     def save(self, filePath):
-        joblib.dump(self.QLearningNeuralNetwork.Q, filePath+"_Q.pkl")
-        joblib.dump(self.QLearningNeuralNetwork.QTarget, filePath+"_QTarget.pkl")
+        joblib.dump(self.algorithm.Q, filePath+"_Q.pkl")
+        joblib.dump(self.algorithm.QTarget, filePath+"_QTarget.pkl")
 
 
     #################### TEST CONVERGENCE SECTION ###################

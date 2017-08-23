@@ -10,7 +10,7 @@ class QLearningNeuralNetwork(Model):
     
     def __init__(self, inputLayer, hiddenLayerSizes, outputLayer):
         super(QLearningNeuralNetwork, self).__init__()
-        self.Q = MLPRegressor(warm_start=True, max_iter=5, verbose=0, tol=-1, solver='sgd', alpha=0.001 ,learning_rate_init=0.00001, learning_rate='constant', batch_size=32, hidden_layer_sizes=hiddenLayerSizes)
+        self.Q = MLPRegressor(warm_start=True, max_iter=5, verbose=0, tol=-1, solver='sgd', alpha=0.001 ,learning_rate_init=0.00015, learning_rate='constant', batch_size=32, hidden_layer_sizes=hiddenLayerSizes)
         self.QTarget = clone(self.Q)
         self.outputLayer = outputLayer
 
@@ -39,6 +39,6 @@ class QLearningNeuralNetwork(Model):
                 allActionPredictions = self.Q.predict(X[i,:].reshape(1,-1))[0] # FeedForward the current predictions
             except NotFittedError as e:
                 allActionPredictions = np.random.rand(self.outputLayer)
-            allActionPredictions[ACTION[i]] = Y[i] # Only change the prediction for the action that was taken to the expected Y value
+            allActionPredictions[int(ACTION[i])] = Y[i] # Only change the prediction for the action that was taken to the expected Y value
             predictionRows += [allActionPredictions]
         return np.array(predictionRows)

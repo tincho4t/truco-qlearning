@@ -29,9 +29,6 @@ class QLearningRequestHandler(BaseHTTPRequestHandler):
     def getParsedPUTParameters(self):
         return LearnDTO(self.getBodyParameters())
 
-    def getParsedSAVEParameters(self):
-        return self.getBodyParameters()['file']
-
     def do_POST(self):
         response = QLearningRequestHandler.player.play(self.getParsedPOSTParameters())
         self.send_response(200)
@@ -47,14 +44,11 @@ class QLearningRequestHandler(BaseHTTPRequestHandler):
         return
 
     def do_PUT(self):
-        response = QLearningRequestHandler.player.learn(self.getParsedPUTParameters())
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(json.dumps("OK"))
-        return
-
-    def do_SAVE(self):
-        response = QLearningRequestHandler.player.save(self.getParsedSaveParameters())
+        params = self.getBodyParameters()
+        if "file" in params:
+            response = QLearningRequestHandler.player.save(params["file"])
+        else:
+            response = QLearningRequestHandler.player.learn(LearnDTO(params))
         self.send_response(200)
         self.end_headers()
         self.wfile.write(json.dumps("OK"))
@@ -64,7 +58,7 @@ class QLearningRequestHandler(BaseHTTPRequestHandler):
         self.send_response(200, "ok")       
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Content-type", "application/json")
-        self.send_header('Access-Control-Allow-Methods', 'POST, PUT, OPTIONS')
+        self.send_header('Access-Control-Allow-Methods', 'POST, PUT, OPTIONS, PATCH')
         self.send_header("Access-Control-Expose-Headers", "Access-Control-Allow-Origin")
         self.send_header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
 
