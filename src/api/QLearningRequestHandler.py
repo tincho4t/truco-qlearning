@@ -37,7 +37,7 @@ class QLearningRequestHandler(BaseHTTPRequestHandler):
         return
 
     def do_DELETE(self):
-        QLearningRequestHandler.player.stopLearning()
+        QLearningRequestHandler.player.stopStartLearning()
         self.send_response(200)
         self.end_headers()
         self.wfile.write(json.dumps("OK"))
