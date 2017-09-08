@@ -1,6 +1,8 @@
 from __future__ import division
 
 class CurrentRound(object):
-	size = 1
+	size = 3
 	def convert(self, requestDTO):
-		return [requestDTO.getCurrentRound() / 2]
+		currentRound = [0,0,0]
+		currentRound[requestDTO.getCurrentRound()] = 1
+		return currentRound

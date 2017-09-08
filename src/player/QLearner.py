@@ -15,6 +15,7 @@ from featureAdapter.CountPossibleActions import CountPossibleActions
 from featureAdapter.RivalCardsUsed import RivalCardsUsed
 from featureAdapter.EnvidoAdapter import EnvidoAdapter
 from featureAdapter.MyEnvidoScore import MyEnvidoScore
+from featureAdapter.CompareCardsToOpponentsPlayedCard import CompareCardsToOpponentsPlayedCard
 from featureAdapter.ScoreFeature import ScoreFeature
 from featureAdapter.TrucoLevel import TrucoLevel
 from featureAdapter.PossibleActionsBitMap import PossibleActionsBitMap
@@ -32,7 +33,7 @@ class QLearner(Player):
     def __init__(self, existingAlgoPath=None):
         super(QLearner, self).__init__()
         self.dataFilePath = 'data.h5' # Where to save data for offline learning
-        self.adapters = [CardUsage(), CurrentRound(), IAmHand(), CountPossibleActions(), RivalCardsUsed(), EnvidoAdapter(), MyEnvidoScore(), ScoreFeature(), TrucoLevel(), PossibleActionsBitMap()]
+        self.adapters = [CardUsage(), CurrentRound(), IAmHand(), CountPossibleActions(), RivalCardsUsed(), EnvidoAdapter(), MyEnvidoScore(), ScoreFeature(), TrucoLevel(), PossibleActionsBitMap(), CompareCardsToOpponentsPlayedCard(), HandsWon()]
         self.m = self.getFeatureSetSize() # Sum of all adapter sizes
         self.X = np.empty((0,self.m), int) # INPUT of NN (state of game before action)
         self.ACTION = np.array([]) # ACTION taken for input X

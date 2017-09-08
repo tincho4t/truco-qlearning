@@ -20,8 +20,8 @@ class HandsWon(object):
         for i in range(len(rounds)):
             if self.apply(rounds, i):
                 winIndex = self.hoWonIndex(rounds[i])
-                feature[2*i] = 1 # On the round
-                feature[2*i + winIndex] = 1 # On Win, Tie or Loose bit.
+                feature[4*i] = 1 # On the round
+                feature[4*i + winIndex] = 1 # On Win, Tie or Loose bit.
         return feature
     
     def apply(self, rounds, i):
