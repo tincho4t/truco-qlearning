@@ -15,17 +15,15 @@ class HandsWon(object):
         self.cardConverter = SimplifyValueCard()
     
     def convert(self, requestDTO):
-        print requestDTO.rounds
         feature = [0,0,0,0,0,0,0,0]
         rounds = requestDTO.rounds
         for i in range(len(rounds)):
             if self.apply(rounds, i):
                 winIndex = self.hoWonIndex(rounds[i])
-                feature[2*i] = 1 # On the round
-                feature[2*i + winIndex] = 1 # On Win, Tie or Loose bit.
-        print "feature: ", feature
+                feature[4*i] = 1 # On the round
+                feature[4*i + winIndex] = 1 # On Win, Tie or Loose bit.
         return feature
-	
+    
     def apply(self, rounds, i):
         return i < 2 and "opponent_card_played" in rounds[i] and "my_card_played" in rounds[i]
 

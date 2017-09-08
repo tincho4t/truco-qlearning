@@ -1,6 +1,9 @@
 from Card import Card
 from Score import Score
 from Envido import Envido
+import sys
+sys.path.insert(0, '../featureAdapter')
+from featureAdapter.SimplifyValueCard import SimplifyValueCard
 
 class GameStatusDTO(object):
     """ Represent the game state
@@ -79,6 +82,8 @@ class GameStatusDTO(object):
         cards = list()
         for card in rawCards:
             cards.append(Card(card))
+        cardConverter = SimplifyValueCard()
+        cards.sort(key=lambda x: cardConverter.cardToFeature(x))
         return cards
 
     def getPossibleActions(self):
@@ -104,4 +109,3 @@ class GameStatusDTO(object):
 
     def getTrucoLevel(self):
         return self.trucoLevel
-
