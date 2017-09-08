@@ -1,3 +1,4 @@
+from sklearn.externals import joblib
 from Model import Model
 import numpy as np
 from sklearn.base import clone
@@ -8,10 +9,14 @@ from sklearn.exceptions import NotFittedError
 # Implementation of a neural network addapted for Q Learning
 class QLearningNeuralNetwork(Model):
     
-    def __init__(self, inputLayer, hiddenLayerSizes, outputLayer):
+    def __init__(self, inputLayer, hiddenLayerSizes, outputLayer, existingAlgoPath=None):
         super(QLearningNeuralNetwork, self).__init__()
-        self.Q = MLPRegressor(warm_start=True, max_iter=5, verbose=0, tol=-1, solver='sgd', alpha=0.001 ,learning_rate_init=0.00015, learning_rate='constant', batch_size=32, hidden_layer_sizes=hiddenLayerSizes)
-        self.QTarget = clone(self.Q)
+        if existingAlgoPath is None:
+            self.Q = MLPRegressor(warm_start=True, max_iter=5, verbose=0, tol=-1, solver='sgd', alpha=0.001 ,learning_rate_init=0.00025, learning_rate='constant', batch_size=32, hidden_layer_sizes=hiddenLayerSizes)
+            self.QTarget = clone(self.Q)
+        else:
+            self.Q = joblib.load(existingAlgoPath+"_Q.pkl")
+            self.QTarget = joblib.load(existingAlgoPath+"_QTarget.pkl")
         self.outputLayer = outputLayer
 
     

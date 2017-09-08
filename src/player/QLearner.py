@@ -29,21 +29,20 @@ from model.QLearningSGDRegressor import QLearningSGDRegressor
 
 class QLearner(Player):
     
-    def __init__(self):
+    def __init__(self, existingAlgoPath=None):
         super(QLearner, self).__init__()
-        print "QLearner created!"
         self.dataFilePath = 'data.h5' # Where to save data for offline learning
-        self.adapters = [SimplifyValueCard(), CardUsage(), CurrentRound(), IAmHand(), CountPossibleActions(), RivalCardsUsed(), EnvidoAdapter(), MyEnvidoScore(), ScoreFeature(), TrucoLevel(), PossibleActionsBitMap()]
+        self.adapters = [CardUsage(), CurrentRound(), IAmHand(), CountPossibleActions(), RivalCardsUsed(), EnvidoAdapter(), MyEnvidoScore(), ScoreFeature(), TrucoLevel(), PossibleActionsBitMap()]
         self.m = self.getFeatureSetSize() # Sum of all adapter sizes
         self.X = np.empty((0,self.m), int) # INPUT of NN (state of game before action)
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
-        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(200), outputLayer=15)
+        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(30), outputLayer=15, existingAlgoPath=existingAlgoPath)
         #self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=5)
         #self.algorithm = QLearningSGDRegressor()
         self.cardConverter = SimplifyValueCard()
         self.lr = 0.99 # LR for reward function
-        self.C = 1000 # When to update target algorithm
+        self.C = 10000 # When to update target algorithm
         self.steps = 0 # Current steps from last update of target algorithm
         self.memorySize = 1000 # Size of memory for ExpRep
         self.trainSize = 32 # Expe Replay size
@@ -52,7 +51,8 @@ class QLearner(Player):
         self.epsilon_minimum = 0.1 # Minimum epslion
         self.epsilonIterations = 0
         self.doLearn = True
-        self.loadRandomTestDataset()
+        self.loadRandomTestDataset(fit=(existingAlgoPath is None))
+        print "QLearner created!"
     
     def getFeatureSetSize(self):
         m = 0
@@ -256,6 +256,7 @@ class QLearner(Player):
         return random.random() < self.epsilon
 
     def save(self, filePath):
+        print("Starting SAVE to", filePath)
         joblib.dump(self.algorithm.Q, filePath+"_Q.pkl")
         joblib.dump(self.algorithm.QTarget, filePath+"_QTarget.pkl")
 
@@ -271,15 +272,16 @@ class QLearner(Player):
         print "Porcentaje de cambios", 100 * np.mean(self.lastPredictions != actionsPredicted),"%"
         self.lastPredictions = actionsPredicted
     
-    def loadRandomTestDataset(self):
+    def loadRandomTestDataset(self, fit=True):
         f = tables.open_file("random_test_convergence.h5")
         self.testDataset = np.array(f.root.X)
         
-        n = self.testDataset.shape[0]
-        y = np.zeros((n,15))
-        for i in range(10):
-            self.algorithm.Q = self.algorithm.Q.fit(self.testDataset, y)
-            self.algorithm.QTarget = self.algorithm.QTarget.fit(self.testDataset, y)
+        if fit:
+            n = self.testDataset.shape[0]
+            y = np.zeros((n,15))
+            for i in range(10):
+                self.algorithm.Q = self.algorithm.Q.fit(self.testDataset, y)
+                self.algorithm.QTarget = self.algorithm.QTarget.fit(self.testDataset, y)
 
         self.testDatasetPossibleActions = list()
         for possibleActions in np.array(f.root.POSSIBLE_ACTIONS):
