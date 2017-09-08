@@ -23,8 +23,20 @@ from api.dto.ActionTakenDTO import ActionTakenDTO
 from api.dto.Action import Action as ACTION
 from api.dto.Card import Card
 from model.QLearningNeuralNetwork import QLearningNeuralNetwork
-from model.QLearningRandomForest import QLearningRandomForest
-from model.QLearningSGDRegressor import QLearningSGDRegressor
+
+AUDIT_ACTIONS = ["Truco", "ReTruco", "ValeCuatro", "Quiero", "NoQuiero", "Envido", "RealEnvido", "FaltaEnvido", "PlayCardLow", "PlayCardMiddle", "PlayCardHigh"]
+AUDIT_DIC = {
+            "ENVIDO_BAJO_SOY_MANO": [0.38461538461538464, True, 0.6923076923076923, True, 0.3076923076923077, True, 0.0, 1, 0.3333333333333333, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.09090909090909091, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0],
+            "ENVIDO_ALTO_SOY_MANO": [0.23076923076923078, True, 0.6923076923076923, True, 0.3076923076923077, True, 0.0, 1, 0.3333333333333333, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.9090909090909091, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0],
+            "ENVIDO_MEDIO_SOY_MANO": [0.38461538461538464, True, 0.15384615384615385, True, 0.3076923076923077, True, 0.0, 1, 0.3333333333333333, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.7878787878787878, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0],
+            "JUGAR_BAJA_MEJOR_OPCION": [0.46153846153846156, True, 0.6923076923076923, True, 0.3076923076923077, True, 0.0, 0, 0.3333333333333333, 1, 1.0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.09090909090909091, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0],
+            "JUGAR_MEDIA_MEJOR_OPCION":[0.46153846153846156, True, 0.6923076923076923, True, 0.3076923076923077, True, 0.0, 0, 0.3333333333333333, 1, 0.38461538461538464, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.09090909090909091, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0],
+            "MALDON":[0.0, True, 0.0, True, 0.0, True, 0.0, 0, 0.3333333333333333, 1, 0.38461538461538464, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.12121212121212122, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0],
+            "BEST_HAND":[0.8461538461538461, True, 0.9230769230769231, True, 1.0, True, 0.0, 0, 0.3333333333333333, 1, 0.38461538461538464, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.8484848484848485, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0],
+            "HIGH_CARD_BEST_OPTION":[0.15384615384615385, True, 0.46153846153846156, False, 0.8461538461538461, True, 0.5, 0, 0.06666666666666667, 1, 0.6153846153846154, 1, 0.46153846153846156, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1.0, 0.0, 0.0, 0.25, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "ME_CANTARON_ENVIDO": [0.23076923076923078, True, 0.15384615384615385, True, 0.3076923076923077, True, 0.0, 0, 0.3333333333333333, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1.0, 0.0, 0.0, 0.0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
+            "ME_CANTARON_TRUCO": [0.23076923076923078, True, 0.15384615384615385, True, 0.3076923076923077, True, 0.0, 0, 0.2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1.0, 0.0, 0.0, 0.0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            }
 
 
 class QLearner(Player):
@@ -42,7 +54,7 @@ class QLearner(Player):
         #self.algorithm = QLearningSGDRegressor()
         self.cardConverter = SimplifyValueCard()
         self.lr = 0.99 # LR for reward function
-        self.C = 10000 # When to update target algorithm
+        self.C = 1000 # When to update target algorithm
         self.steps = 0 # Current steps from last update of target algorithm
         self.memorySize = 1000 # Size of memory for ExpRep
         self.trainSize = 32 # Expe Replay size
@@ -140,9 +152,21 @@ class QLearner(Player):
         response.setAction(action)
         return response
     
-    def stopLearning(self):
-        self.doLearn = False
-        print("STOPED LEARNING")
+    def stopStartLearning(self):
+        self.doLearn = not self.doLearn
+        if self.doLearn:
+            print("LEARNING")
+        else:
+            print("STOPED LEARNING")
+
+    def audit(self):
+        for situation, vector in AUDIT_DIC.iteritems():
+            resultString = situation
+            predictions = self.algorithm.predict(np.array(vector).reshape(1, -1), target=True)[0]
+            for action in AUDIT_ACTIONS:
+                action_index = ACTION.actionToIndexDic[action]
+                resultString += " " + action + ":" + str(predictions[action_index])
+            print(resultString)
 
     def printActionStats(self, possibleActions, preds):
         indexes = np.where(possibleActions)[0]
@@ -170,7 +194,9 @@ class QLearner(Player):
             yRows = list() # List of rewards to learn
             r = 1.0*learnDTO.points
             r /= 30.0 #Normalized
-                
+            if r < 0:
+                r*=2
+
             doPrint = np.random.rand(1) < 0.001
             if doPrint:
                 row = featureRows[0]
@@ -217,6 +243,8 @@ class QLearner(Player):
             self.steps += 1
             if self.C < self.steps:
                 self.algorithm.updateTarget()
+                self.audit()
+                self.algorithm.updateLR()
                 self.steps = 0
                 self.testConvergence()
 
