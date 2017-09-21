@@ -32,6 +32,7 @@ class QLearningRequestHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         response = QLearningRequestHandler.player.play(self.getParsedPOSTParameters())
         self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
         self.wfile.write(json.dumps(response.toDic()))
         return
@@ -39,6 +40,7 @@ class QLearningRequestHandler(BaseHTTPRequestHandler):
     def do_DELETE(self):
         QLearningRequestHandler.player.stopStartLearning()
         self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
         self.wfile.write(json.dumps("OK"))
         return
@@ -50,6 +52,7 @@ class QLearningRequestHandler(BaseHTTPRequestHandler):
         else:
             response = QLearningRequestHandler.player.learn(LearnDTO(params))
         self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
         self.wfile.write(json.dumps("OK"))
         return
