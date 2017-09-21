@@ -18,8 +18,8 @@ class QLearningNeuralNetwork(Model):
             self.Q = MLPRegressor.set_params(self.tmp_nn)
             self.QTarget = MLPRegressor.set_params(self.Q)
         else:
-            self.Q = joblib.load(existingAlgoPath+"_Q.pkl")
-            self.QTarget = joblib.load(existingAlgoPath+"_QTarget.pkl")
+            self.Q = joblib.load(existingAlgoPath+".pkl")
+            self.QTarget = MLPRegressor.set_params(self.Q)
             self.tmp_nn = MLPRegressor.set_params(self.Q)
         self.outputLayer = outputLayer
 

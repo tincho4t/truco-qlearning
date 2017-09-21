@@ -287,9 +287,8 @@ class QLearner(Player):
         return random.random() < self.epsilon
 
     def save(self, filePath):
-        print("Starting SAVE to", filePath)
-        joblib.dump(self.algorithm.Q, filePath+"_Q.pkl")
-        joblib.dump(self.algorithm.QTarget, filePath+"_QTarget.pkl")
+        print("Saving to", filePath)
+        joblib.dump(self.algorithm.QTarget, filePath+".pkl")
         print("Save finished")
 
 
