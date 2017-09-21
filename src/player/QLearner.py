@@ -27,16 +27,15 @@ from model.QLearningNeuralNetwork import QLearningNeuralNetwork
 
 AUDIT_ACTIONS = ["Truco", "ReTruco", "ValeCuatro", "Quiero", "NoQuiero", "Envido", "RealEnvido", "FaltaEnvido", "PlayCardLow", "PlayCardMiddle", "PlayCardHigh"]
 AUDIT_DIC = {
-            "ENVIDO_BAJO_SOY_MANO": [0.38461538461538464, True, 0.6923076923076923, True, 0.3076923076923077, True, 0.0, 1, 0.3333333333333333, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.09090909090909091, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-            "ENVIDO_ALTO_SOY_MANO": [0.23076923076923078, True, 0.6923076923076923, True, 0.3076923076923077, True, 0.0, 1, 0.3333333333333333, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.9090909090909091, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-            "ENVIDO_MEDIO_SOY_MANO": [0.38461538461538464, True, 0.15384615384615385, True, 0.3076923076923077, True, 0.0, 1, 0.3333333333333333, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.7878787878787878, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-            "JUGAR_BAJA_MEJOR_OPCION": [0.46153846153846156, True, 0.6923076923076923, True, 0.3076923076923077, True, 0.0, 0, 0.3333333333333333, 1, 1.0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.09090909090909091, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-            "JUGAR_MEDIA_MEJOR_OPCION":[0.46153846153846156, True, 0.6923076923076923, True, 0.3076923076923077, True, 0.0, 0, 0.3333333333333333, 1, 0.38461538461538464, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.09090909090909091, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-            "MALDON":[0.0, True, 0.0, True, 0.0, True, 0.0, 0, 0.3333333333333333, 1, 0.38461538461538464, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.12121212121212122, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-            "BEST_HAND":[0.8461538461538461, True, 0.9230769230769231, True, 1.0, True, 0.0, 0, 0.3333333333333333, 1, 0.38461538461538464, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.8484848484848485, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-            "HIGH_CARD_BEST_OPTION":[0.15384615384615385, True, 0.46153846153846156, False, 0.8461538461538461, True, 0.5, 0, 0.06666666666666667, 1, 0.6153846153846154, 1, 0.46153846153846156, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1.0, 0.0, 0.0, 0.25, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "ME_CANTARON_ENVIDO": [0.23076923076923078, True, 0.15384615384615385, True, 0.3076923076923077, True, 0.0, 0, 0.3333333333333333, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1.0, 0.0, 0.0, 0.0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-            "ME_CANTARON_TRUCO": [0.23076923076923078, True, 0.15384615384615385, True, 0.3076923076923077, True, 0.0, 0, 0.2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1.0, 0.0, 0.0, 0.0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            "ENVIDO_ALTO_SOY_MANO": [0.23076923076923078, True, 0.3076923076923077, True, 0.6923076923076923, True, 1, 0, 0, 1, 0.3333333333333333, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.9090909090909091, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "ENVIDO_MEDIO_SOY_MANO": [0.15384615384615385, True, 0.3076923076923077, True, 0.38461538461538464, True, 1, 0, 0, 1, 0.3333333333333333, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.7878787878787878, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "JUGAR_BAJA_MEJOR_OPCION": [0.3076923076923077, True, 0.46153846153846156, True, 0.6923076923076923, True, 1, 0, 0, 0, 0.3333333333333333, 1, 1.0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.09090909090909091, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1],
+            "JUGAR_MEDIA_MEJOR_OPCION":[0.3076923076923077, True, 0.46153846153846156, True, 0.6923076923076923, True, 1, 0, 0, 0, 0.3333333333333333, 1, 0.38461538461538464, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.09090909090909091, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0],
+            "MALDON":[0.0, True, 0.0, True, 0.0, True, 1, 0, 0, 0, 0.3333333333333333, 1, 0.38461538461538464, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.12121212121212122, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1],
+            "BEST_HAND":[0.8461538461538461, True, 0.9230769230769231, True, 1.0, True, 1, 0, 0, 0, 0.3333333333333333, 1, 0.38461538461538464, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.8484848484848485, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0],
+            "HIGH_CARD_BEST_OPTION":[0.15384615384615385, True, 0.46153846153846156, False, 0.8461538461538461, True, 0, 1, 0, 0, 0.06666666666666667, 1, 0.6153846153846154, 1, 0.46153846153846156, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1.0, 0.0, 0.0, 0.25, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0],
+            "ME_CANTARON_ENVIDO": [0.15384615384615385, True, 0.23076923076923078, True, 0.3076923076923077, True, 1, 0, 0, 0, 0.3333333333333333, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1.0, 0.0, 0.0, 0.0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "ME_CANTARON_TRUCO": [0.15384615384615385, True, 0.23076923076923078, True, 0.3076923076923077, True, 1, 0, 0, 0, 0.2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1.0, 0.0, 0.0, 0.0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             }
 
 
@@ -45,26 +44,27 @@ class QLearner(Player):
     def __init__(self, existingAlgoPath=None):
         super(QLearner, self).__init__()
         self.dataFilePath = 'data.h5' # Where to save data for offline learning
-        self.adapters = [CardUsage(), CurrentRound(), IAmHand(), CountPossibleActions(), RivalCardsUsed(), EnvidoAdapter(), MyEnvidoScore(), ScoreFeature(), TrucoLevel(), PossibleActionsBitMap(), CompareCardsToOpponentsPlayedCard(), HandsWon()]
+        self.adapters = [CardUsage(), CurrentRound(), IAmHand(), CountPossibleActions(), RivalCardsUsed(), EnvidoAdapter(), MyEnvidoScore(), ScoreFeature(), TrucoLevel(), PossibleActionsBitMap(), HandsWon(), CompareCardsToOpponentsPlayedCard()]
         self.m = self.getFeatureSetSize() # Sum of all adapter sizes
         self.X = np.empty((0,self.m), int) # INPUT of NN (state of game before action)
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
-        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(30), outputLayer=15, existingAlgoPath=existingAlgoPath)
+        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(120), outputLayer=15, existingAlgoPath=existingAlgoPath)
         #self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=5)
         #self.algorithm = QLearningSGDRegressor()
         self.cardConverter = SimplifyValueCard()
         self.lr = 0.99 # LR for reward function
-        self.C = 1000 # When to update target algorithm
+        self.C = 200 # When to update target algorithm
         self.steps = 0 # Current steps from last update of target algorithm
         self.memorySize = 1000 # Size of memory for ExpRep
         self.trainSize = 32 # Expe Replay size
-        self.epsilon = 1 # Probability of taking a random action
+        self.epsilon = 0.19 # Probability of taking a random action
         self.epsilon_descent = 0.1 # Decrese every N learning steps
         self.epsilon_minimum = 0.1 # Minimum epslion
         self.epsilonIterations = 0
         self.doLearn = True
         self.loadRandomTestDataset(fit=(existingAlgoPath is None))
+        self.countTargetUpdates = 0
         print "QLearner created!"
     
     def getFeatureSetSize(self):
@@ -198,7 +198,7 @@ class QLearner(Player):
             if r < 0:
                 r*=2
 
-            doPrint = np.random.rand(1) < 0.001
+            doPrint = np.random.rand(1) < 0.00001
             if doPrint:
                 row = featureRows[0]
                 possibleActions = possibleActionsRows[0]
@@ -226,7 +226,7 @@ class QLearner(Player):
                 self.Y = self.Y[:-diff]
             if self.steps % 1 == 0:
                 randomTrainIndexes = np.random.randint(0, min(self.memorySize, self.Y.shape[0]), min(self.Y.shape[0], self.trainSize))
-                self.algorithm.learn(self.X[randomTrainIndexes,:], self.ACTION[randomTrainIndexes], self.Y[randomTrainIndexes])
+                self.algorithm.learn(self.X[randomTrainIndexes,:], self.ACTION[randomTrainIndexes], self.Y[randomTrainIndexes], first_fit = self.countTargetUpdates == 0)
                 # self.saveDataset(np.array(featureRows), np.array(actionRows), np.array(yRows), np.array(possibleActionsRows)) # Save data for offline learning
 
             # Lower epsilon
@@ -243,11 +243,13 @@ class QLearner(Player):
             # Target network hack
             self.steps += 1
             if self.C < self.steps:
+                self.countTargetUpdates += 1
                 self.algorithm.updateTarget()
                 self.audit()
                 self.algorithm.updateLR()
                 self.steps = 0
                 self.testConvergence()
+                print("Target updated ", self.countTargetUpdates)
 
         return "OK"
     
@@ -288,6 +290,7 @@ class QLearner(Player):
         print("Starting SAVE to", filePath)
         joblib.dump(self.algorithm.Q, filePath+"_Q.pkl")
         joblib.dump(self.algorithm.QTarget, filePath+"_QTarget.pkl")
+        print("Save finished")
 
 
     #################### TEST CONVERGENCE SECTION ###################
