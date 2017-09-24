@@ -56,7 +56,8 @@ class GameStatusDTO(object):
                 "sung": ["Envido", "Envido", "RealEnvido"],
                 "oppenent_envido_score": 26
             },
-            "possible_actions": ["Truco", "PlayCard"]
+            "possible_actions": ["Truco", "PlayCard"],
+            "decision_type": "Envido"
         }
     """
     def __init__(self, params):
@@ -69,6 +70,7 @@ class GameStatusDTO(object):
         self.iAmHand = params['i_am_hand']
         self.trucoLevel = params['truco_level']
         self.envido = Envido(params['envido'])
+        self.decisionType = params['decision_type'] if 'decision_type' in params else None
         if('possible_actions' in params):
             self.possibleActions = params['possible_actions']
     
@@ -109,3 +111,6 @@ class GameStatusDTO(object):
 
     def getTrucoLevel(self):
         return self.trucoLevel
+
+    def getDecisionType(self):
+        return self.decisionType
