@@ -20,6 +20,7 @@ from featureAdapter.ScoreFeature import ScoreFeature
 from featureAdapter.TrucoLevel import TrucoLevel
 from featureAdapter.PossibleActionsBitMap import PossibleActionsBitMap
 from featureAdapter.HandsWon import HandsWon
+from featureAdapter.DesicionType import DesicionType
 from api.dto.ActionTakenDTO import ActionTakenDTO
 from api.dto.Action import Action as ACTION
 from api.dto.Card import Card
@@ -44,17 +45,17 @@ class QLearner(Player):
     def __init__(self, existingAlgoPath=None):
         super(QLearner, self).__init__()
         self.dataFilePath = 'data.h5' # Where to save data for offline learning
-        self.adapters = [CardUsage(), CurrentRound(), IAmHand(), CountPossibleActions(), RivalCardsUsed(), EnvidoAdapter(), MyEnvidoScore(), ScoreFeature(), TrucoLevel(), PossibleActionsBitMap(), HandsWon(), CompareCardsToOpponentsPlayedCard()]
+        self.adapters = [CardUsage(), CurrentRound(), IAmHand(), CountPossibleActions(), RivalCardsUsed(), EnvidoAdapter(), MyEnvidoScore(), ScoreFeature(), TrucoLevel(), PossibleActionsBitMap(), HandsWon(), CompareCardsToOpponentsPlayedCard(), DesicionType()]
         self.m = self.getFeatureSetSize() # Sum of all adapter sizes
         self.X = np.empty((0,self.m), int) # INPUT of NN (state of game before action)
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
-        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(120), outputLayer=15, existingAlgoPath=existingAlgoPath)
+        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(20), outputLayer=15, existingAlgoPath=existingAlgoPath)
         #self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=5)
         #self.algorithm = QLearningSGDRegressor()
         self.cardConverter = SimplifyValueCard()
         self.lr = 0.99 # LR for reward function
-        self.C = 200 # When to update target algorithm
+        self.C = 1000 # When to update target algorithm
         self.steps = 0 # Current steps from last update of target algorithm
         self.memorySize = 1000 # Size of memory for ExpRep
         self.trainSize = 32 # Expe Replay size

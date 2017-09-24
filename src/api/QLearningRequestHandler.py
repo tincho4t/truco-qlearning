@@ -61,7 +61,7 @@ class QLearningRequestHandler(BaseHTTPRequestHandler):
         self.send_response(200, "ok")       
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Content-type", "application/json")
-        self.send_header('Access-Control-Allow-Methods', 'POST, PUT, OPTIONS, PATCH')
+        self.send_header('Access-Control-Allow-Methods', 'POST, PUT, OPTIONS, PATCH, DELETE')
         self.send_header("Access-Control-Expose-Headers", "Access-Control-Allow-Origin")
         self.send_header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
 
