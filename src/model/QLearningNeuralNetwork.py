@@ -11,7 +11,7 @@ class QLearningNeuralNetwork(Model):
     
     def __init__(self, inputLayer, hiddenLayerSizes, outputLayer, existingAlgoPath=None):
         super(QLearningNeuralNetwork, self).__init__()
-        self.lr_drop_rate = 0.99999
+        self.lr_drop_rate = 0.9999
         # Easy copy hack
         self.tmp_nn = MLPRegressor(warm_start=True, max_iter=5, verbose=0, tol=-1, solver='sgd', alpha=0.001 ,learning_rate_init=0.005, learning_rate='constant', batch_size=32, hidden_layer_sizes=hiddenLayerSizes)
         if existingAlgoPath is None:

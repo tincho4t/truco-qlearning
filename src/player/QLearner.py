@@ -25,6 +25,7 @@ from api.dto.ActionTakenDTO import ActionTakenDTO
 from api.dto.Action import Action as ACTION
 from api.dto.Card import Card
 from model.QLearningNeuralNetwork import QLearningNeuralNetwork
+from model.QLearningTensorflow import QLearningTensorflow
 
 AUDIT_ACTIONS = ["Truco", "ReTruco", "ValeCuatro", "Quiero", "NoQuiero", "Envido", "RealEnvido", "FaltaEnvido", "PlayCardLow", "PlayCardMiddle", "PlayCardHigh"]
 AUDIT_DIC = {
@@ -50,7 +51,8 @@ class QLearner(Player):
         self.X = np.empty((0,self.m), int) # INPUT of NN (state of game before action)
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
-        self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(20), outputLayer=15, existingAlgoPath=existingAlgoPath)
+        #self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(60,20), outputLayer=15, existingAlgoPath=existingAlgoPath)
+        self.algorithm = QLearningTensorflow(n_input=self.m, n_hidden_1=60, outputLayer=15, existingAlgoPath=existingAlgoPath)
         #self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=5)
         #self.algorithm = QLearningSGDRegressor()
         self.cardConverter = SimplifyValueCard()
@@ -64,7 +66,7 @@ class QLearner(Player):
         self.epsilon_minimum = 0.1 # Minimum epslion
         self.epsilonIterations = 0
         self.doLearn = True
-        self.loadRandomTestDataset(fit=(existingAlgoPath is None))
+        self.loadRandomTestDataset()
         self.countTargetUpdates = 0
         print "QLearner created!"
     
@@ -227,7 +229,7 @@ class QLearner(Player):
                 self.Y = self.Y[:-diff]
             if self.steps % 1 == 0:
                 randomTrainIndexes = np.random.randint(0, min(self.memorySize, self.Y.shape[0]), min(self.Y.shape[0], self.trainSize))
-                self.algorithm.learn(self.X[randomTrainIndexes,:], self.ACTION[randomTrainIndexes], self.Y[randomTrainIndexes], first_fit = self.countTargetUpdates == 0)
+                self.algorithm.learn(self.X[randomTrainIndexes,:], self.ACTION[randomTrainIndexes], self.Y[randomTrainIndexes])
                 # self.saveDataset(np.array(featureRows), np.array(actionRows), np.array(yRows), np.array(possibleActionsRows)) # Save data for offline learning
 
             # Lower epsilon
@@ -289,7 +291,7 @@ class QLearner(Player):
 
     def save(self, filePath):
         print("Saving to", filePath)
-        joblib.dump(self.algorithm.QTarget, filePath+".pkl")
+        self.algorithm.save(filePath)
         print("Save finished")
 
 
@@ -304,16 +306,9 @@ class QLearner(Player):
         print "Porcentaje de cambios", 100 * np.mean(self.lastPredictions != actionsPredicted),"%"
         self.lastPredictions = actionsPredicted
     
-    def loadRandomTestDataset(self, fit=True):
+    def loadRandomTestDataset(self):
         f = tables.open_file("random_test_convergence.h5")
         self.testDataset = np.array(f.root.X)
-        
-        if fit:
-            n = self.testDataset.shape[0]
-            y = np.zeros((n,15))
-            for i in range(10):
-                self.algorithm.Q = self.algorithm.Q.fit(self.testDataset, y)
-                self.algorithm.QTarget = self.algorithm.QTarget.fit(self.testDataset, y)
 
         self.testDatasetPossibleActions = list()
         for possibleActions in np.array(f.root.POSSIBLE_ACTIONS):
