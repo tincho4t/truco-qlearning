@@ -93,3 +93,7 @@ src/pip-selfcheck.json
 
 # Ignore Dataset files
 .h5
+*.pkl
+*.meta
+*.index
+*.data-*
