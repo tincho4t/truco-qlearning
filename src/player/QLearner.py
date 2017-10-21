@@ -45,15 +45,16 @@ class QLearner(Player):
     
     def __init__(self, existingAlgoPath=None):
         super(QLearner, self).__init__()
+        self.name = '640_self_vs_self'
         self.dataFilePath = 'data.h5' # Where to save data for offline learning
         self.adapters = [CardUsage(), CurrentRound(), IAmHand(), CountPossibleActions(), RivalCardsUsed(), EnvidoAdapter(), MyEnvidoScore(), ScoreFeature(), TrucoLevel(), PossibleActionsBitMap(), HandsWon(), CompareCardsToOpponentsPlayedCard(), DesicionType()]
         self.m = self.getFeatureSetSize() # Sum of all adapter sizes
         self.X = np.empty((0,self.m), int) # INPUT of NN (state of game before action)
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
-        #self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(60,20), outputLayer=15, existingAlgoPath=existingAlgoPath)
-        self.algorithm = QLearningTensorflow(n_input=self.m, n_hidden_1=60, outputLayer=15, existingAlgoPath=existingAlgoPath)
-        #self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=5)
+        # self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(60,20), outputLayer=15, existingAlgoPath=existingAlgoPath)
+        self.algorithm = QLearningTensorflow(n_input=self.m, n_hidden_1=640, outputLayer=15, existingAlgoPath=existingAlgoPath)
+        # self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=5)
         #self.algorithm = QLearningSGDRegressor()
         self.cardConverter = SimplifyValueCard()
         self.lr = 0.99 # LR for reward function
@@ -198,8 +199,8 @@ class QLearner(Player):
             yRows = list() # List of rewards to learn
             r = 1.0*learnDTO.points
             r /= 30.0 #Normalized
-            if r < 0:
-                r*=2
+            # if r < 0:
+            #     r*=2
 
             doPrint = np.random.rand(1) < 0.00001
             if doPrint:
@@ -253,7 +254,8 @@ class QLearner(Player):
                 self.steps = 0
                 self.testConvergence()
                 print("Target updated ", self.countTargetUpdates)
-
+                if self.countTargetUpdates == 2000:
+                    self.save(self.name)
         return "OK"
     
     def saveDataset(self, X, ACTION, Y, POSSIBLE_ACTIONS):
