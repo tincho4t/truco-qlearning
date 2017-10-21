@@ -8,14 +8,14 @@ class QLearningTensorflow(Model):
     
     def __init__(self, n_input, n_hidden_1, outputLayer, existingAlgoPath=None):
         super(QLearningTensorflow, self).__init__()
-        self.lr_drop_rate = 0.9999
-        self.current_lr = 0.005
+        self.lr_drop_rate = 0.992
+        self.current_lr = 0.01
         self.n_hidden_1 = n_hidden_1
         self.outputLayer = outputLayer
         self.n_input = n_input
-        self.prob = tf.placeholder_with_default(0.5, shape=())
         self.X = tf.placeholder("float", [None, n_input])
         self.Y = tf.placeholder("float", [None, outputLayer])
+        self.prob = tf.placeholder_with_default(1, shape=())
 
         self.Q = self.Q_model()
         self.QTarget = self.Q + 0
@@ -33,12 +33,18 @@ class QLearningTensorflow(Model):
     def Q_model(self):
         self.dense = tf.layers.dense(inputs=self.X, units=self.n_hidden_1, activation=tf.nn.relu)
         self.dropout = tf.layers.dropout(inputs=self.dense, rate=self.prob)
+        # self.dense_1 = tf.layers.dense(inputs=self.dropout, units=self.n_hidden_1, activation=tf.nn.relu)
+        # self.dropout_1 = tf.layers.dropout(inputs=self.dense_1, rate=self.prob)
+        # self.dense_2 = tf.layers.dense(inputs=self.dropout_1, units=self.n_hidden_1, activation=tf.nn.relu)
         self.out_layer = tf.layers.dense(inputs=self.dropout, units=self.outputLayer, activation=tf.nn.tanh)
         return self.out_layer
 
     def QTarget(self):
         self.Target_dense = tf.layers.dense(inputs=self.X, units=self.n_hidden_1, activation=tf.nn.relu)
         self.Target_dropout = tf.layers.dropout(inputs=self.Target_dense, rate=self.prob)
+        # self.Target_dense_1 = tf.layers.dense(inputs=self.Target_dropout, units=self.n_hidden_1, activation=tf.nn.relu)
+        # self.Target_dropout_1 = tf.layers.dropout(inputs=self.Target_dense_1, rate=self.prob)
+        # self.Target_dense_2 = tf.layers.dense(inputs=self.Target_dropout_1, units=self.n_hidden_1, activation=tf.nn.relu)
         self.Target_out_layer = tf.layers.dense(inputs=self.Target_dropout, units=self.outputLayer, activation=tf.nn.tanh)
         return self.Target_out_layer
     
@@ -60,7 +66,7 @@ class QLearningTensorflow(Model):
     
     def learn(self, X_in, ACTION_in, Y_in):
         Y_LEARN = self.getYOnlyForActionTaken(X_in, ACTION_in, Y_in)
-        self.tfsession.run(self.optimizer, feed_dict={self.X: X_in, self.Y: Y_LEARN})
+        self.tfsession.run(self.optimizer, feed_dict={self.X: X_in, self.Y: Y_LEARN, self.prob: 0.8})
     
     def getYOnlyForActionTaken(self, X, ACTION, Y):
         allActionPredictions = self.tfsession.run(self.Q, feed_dict={self.X: X, self.prob: 1})
