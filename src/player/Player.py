@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(0, '../api')
-from api.QLearningRequestHandler import QLearningRequestHandler
+from api.ApiPlayerRequestHandler import ApiPlayerRequestHandler
 
 """ 
     Deveria ser herencia multiple y no heredar asi pero por

@@ -5,7 +5,7 @@ from urlparse import parse_qs
 from dto.GameStatusDTO import GameStatusDTO
 from dto.LearnDTO import LearnDTO
  
-class QLearningRequestHandler(BaseHTTPRequestHandler):
+class ApiPlayerRequestHandler(BaseHTTPRequestHandler):
     """ Static variable that contains the q-player """
     player = None
     
@@ -30,7 +30,7 @@ class QLearningRequestHandler(BaseHTTPRequestHandler):
         return LearnDTO(self.getBodyParameters())
 
     def do_POST(self):
-        response = QLearningRequestHandler.player.play(self.getParsedPOSTParameters())
+        response = ApiPlayerRequestHandler.player.play(self.getParsedPOSTParameters())
         self.send_response(200)
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
@@ -38,7 +38,7 @@ class QLearningRequestHandler(BaseHTTPRequestHandler):
         return
 
     def do_DELETE(self):
-        QLearningRequestHandler.player.stopStartLearning()
+        ApiPlayerRequestHandler.player.stopStartLearning()
         self.send_response(200)
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
@@ -48,9 +48,9 @@ class QLearningRequestHandler(BaseHTTPRequestHandler):
     def do_PUT(self):
         params = self.getBodyParameters()
         if "file" in params:
-            response = QLearningRequestHandler.player.save(params["file"])
+            response = ApiPlayerRequestHandler.player.save(params["file"])
         else:
-            response = QLearningRequestHandler.player.learn(LearnDTO(params))
+            response = ApiPlayerRequestHandler.player.learn(LearnDTO(params))
         self.send_response(200)
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
