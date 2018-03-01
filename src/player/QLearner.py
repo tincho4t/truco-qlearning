@@ -43,9 +43,9 @@ AUDIT_DIC = {
 
 class QLearner(Player):
     
-    def __init__(self, existingAlgoPath=None):
+    def __init__(self, name, existingAlgoPath=None, tfsession=None):
         super(QLearner, self).__init__()
-        self.name = '640_self_vs_self'
+        self.name = name
         self.dataFilePath = 'data.h5' # Where to save data for offline learning
         self.adapters = [CardUsage(), CurrentRound(), IAmHand(), CountPossibleActions(), RivalCardsUsed(), EnvidoAdapter(), MyEnvidoScore(), ScoreFeature(), TrucoLevel(), PossibleActionsBitMap(), HandsWon(), CompareCardsToOpponentsPlayedCard(), DesicionType()]
         self.m = self.getFeatureSetSize() # Sum of all adapter sizes
@@ -53,7 +53,7 @@ class QLearner(Player):
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
         # self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(60,20), outputLayer=15, existingAlgoPath=existingAlgoPath)
-        self.algorithm = QLearningTensorflow(n_input=self.m, n_hidden_1=640, outputLayer=15, existingAlgoPath=existingAlgoPath)
+        self.algorithm = QLearningTensorflow(n_input=self.m, n_hidden_1=640, outputLayer=15, existingAlgoPath=existingAlgoPath, tfsession=tfsession)
         # self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=5)
         #self.algorithm = QLearningSGDRegressor()
         self.cardConverter = SimplifyValueCard()
@@ -254,8 +254,11 @@ class QLearner(Player):
                 self.steps = 0
                 self.testConvergence()
                 print("Target updated ", self.countTargetUpdates)
-                if self.countTargetUpdates == 2000:
-                    self.save(self.name)
+                if self.countTargetUpdates in [2000,3700,4744,5963]:
+                    self.save(self.name + '_' + str(self.countTargetUpdates))
+                if self.countTargetUpdates in [2000/2,3700/2,4744/2,5963/2]:
+                    self.save(self.name + '_equal_batches_' + str(self.countTargetUpdates))
+
         return "OK"
     
     def saveDataset(self, X, ACTION, Y, POSSIBLE_ACTIONS):

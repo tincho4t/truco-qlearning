@@ -6,10 +6,10 @@ import tensorflow as tf
 # Implementation of a neural network addapted for Q Learning
 class QLearningTensorflow(Model):
     
-    def __init__(self, n_input, n_hidden_1, outputLayer, existingAlgoPath=None):
+    def __init__(self, n_input, n_hidden_1, outputLayer, existingAlgoPath=None, tfsession=None):
         super(QLearningTensorflow, self).__init__()
         self.lr_drop_rate = 0.992
-        self.current_lr = 0.01
+        self.current_lr = 9.92e-6
         self.n_hidden_1 = n_hidden_1
         self.outputLayer = outputLayer
         self.n_input = n_input
@@ -21,19 +21,24 @@ class QLearningTensorflow(Model):
         self.QTarget = self.Q + 0
         self.cost = tf.nn.l2_loss(self.Q-self.Y)
         self.optimizer = tf.train.GradientDescentOptimizer(self.current_lr).minimize(self.cost)
-        # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.2)
+        # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.1)
         config = tf.ConfigProto(
             device_count = {'GPU': 0}
         )
-        self.tfsession = tf.Session(config=config)
-        # self.tfsession = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
-        self.init = tf.global_variables_initializer()
-        self.tfsession.run(self.init)
-        self.initial_fit()
+        if tfsession is None:
+            self.tfsession = tf.Session(config=config)
+            # self.tfsession = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+            self.init = tf.global_variables_initializer()
+            self.tfsession.run(self.init)
+            self.initial_fit()
+        else:
+            self.tfsession = tfsession
         self.saver = tf.train.Saver()
 
         if existingAlgoPath is not None:
+            tf.reset_default_graph()
             self.saver.restore(self.tfsession, existingAlgoPath)
+            print('im here')
 
     def Q_model(self):
         self.dense = tf.layers.dense(inputs=self.X, units=self.n_hidden_1, activation=tf.nn.relu)
