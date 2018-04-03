@@ -9,6 +9,9 @@ from BaseHTTPServer import HTTPServer
 from api.ApiPlayerRequestHandler import ApiPlayerRequestHandler
 from api.PerformanceRequestHandler import PerformanceRequestHandler
 
+from subprocess import Popen
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument('-fp1','--folder_players1', help='Path to folder with models of first group', required=False)
 parser.add_argument('-fp2','--folder_players2', help='Path to folder with models of second group', required=False)
@@ -30,17 +33,10 @@ def run_performance_api(save_folder, port=8200):
 def get_player_files(path):
     return([x[:-6] for x in glob.glob(path + '/*.index')])
 
-class ApiPlayerRequestHandlerPlayer2(ApiPlayerRequestHandler):
-    pass
-
-def api_player(player_class, port=8000):
-    signal(SIGTERM, on_sigterm)
-    try:
-        httpd = HTTPServer(('0.0.0.0', port), ApiPlayerRequestHandler)
-        while True:
-            httpd.handle_request()
-    finally:
-        print 'player dead'
+def api_player(port, path, name="player_1"):
+    cmd = "python main.py -p %d -f %s -n %s" % (port, path, name) # TODO: Agregar parametro para que no aprenda la red
+    print cmd
+    return Popen(cmd, shell=True)
 
 if __name__ == '__main__':
     args = vars(parser.parse_args())
@@ -56,24 +52,18 @@ if __name__ == '__main__':
     performance_proc.start()
 
     for base_file_name_1 in player1_file_names:
-        ApiPlayerRequestHandler.player = QLearner('player1', base_file_name_1)
-        player1_proc = Process(target=api_player, args=(ApiPlayerRequestHandler, 8000))
-        PerformanceRequestHandler.player_1_file = base_file_name_1
-        player1_proc.start()
+        player1_proc = api_player(8000, base_file_name_1, 'player1')
         for base_file_name_2 in player2_file_names:
-            ApiPlayerRequestHandler.player = QLearner('player2', base_file_name_2)
-            player2_proc = Process(target=api_player, args=(ApiPlayerRequestHandlerPlayer2, 8001))
-            PerformanceRequestHandler.player_2_file = base_file_name_2
-            player2_proc.start()
+            player2_proc = api_player(8001, base_file_name_2, 'player2')
+            print "Esperando 10 segundos antes de levatar el browser"
+            time.sleep(10)
             webbrowser.open('http://localhost:8300/performance.html')
             while not PerformanceRequestHandler.performance_measured:
                 time.sleep(1)
             else:
                 PerformanceRequestHandler.performance_measured = False
-                player2_proc.terminate()
-                player2_proc.join()       
-        player1_proc.terminate()
-        player1_proc.join()
+                player2_proc.kill()
+        player1_proc.kill()
     performance_proc.terminate()
     performance_proc.join()
     

@@ -43,7 +43,7 @@ AUDIT_DIC = {
 
 class QLearner(Player):
     
-    def __init__(self, name, existingAlgoPath=None, tfsession=None):
+    def __init__(self, name, existingAlgoPath=None):
         super(QLearner, self).__init__()
         self.name = name
         self.dataFilePath = 'data.h5' # Where to save data for offline learning
@@ -53,7 +53,7 @@ class QLearner(Player):
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
         # self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(60,20), outputLayer=15, existingAlgoPath=existingAlgoPath)
-        self.algorithm = QLearningTensorflow(n_input=self.m, n_hidden_1=640, outputLayer=15, existingAlgoPath=existingAlgoPath, tfsession=tfsession)
+        self.algorithm = QLearningTensorflow(n_input=self.m, n_hidden_1=640, outputLayer=15, existingAlgoPath=existingAlgoPath)
         # self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=5)
         #self.algorithm = QLearningSGDRegressor()
         self.cardConverter = SimplifyValueCard()
