@@ -17,7 +17,8 @@ class PerformanceRequestHandler(BaseHTTPRequestHandler):
     def save_results(self, match_results):
         print(self.save_folder)
         print(match_results)
-        performance_measured = True
+        PerformanceRequestHandler.performance_measured = True
+        print "Se paso a TRUE %d" % PerformanceRequestHandler.performance_measured
 
     def getBodyParameters(self):
         body_string = self.rfile.read(int(self.headers['Content-Length']))
