@@ -8,6 +8,7 @@ from api.ApiPlayerRequestHandler import ApiPlayerRequestHandler
 from api.PerformanceRequestHandler import PerformanceRequestHandler
 
 from subprocess import Popen
+import psutil
 
 # Python performance.py -fp1 x -fp2 y -sf z
 
@@ -15,6 +16,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-fp1','--folder_players1', help='Path to folder with models of first group', required=False)
 parser.add_argument('-fp2','--folder_players2', help='Path to folder with models of second group', required=False)
 parser.add_argument('-sf','--save_folder', help='Path to folder where to save results', required=False)
+
+
+def kill(proc_pid):
+    process = psutil.Process(proc_pid)
+    for proc in process.children(recursive=True):
+        proc.kill()
+    process.kill()
 
 def startPerformanceWebServer(save_folder, port=8200):
     PerformanceRequestHandler.save_folder = save_folder
@@ -42,9 +50,11 @@ if __name__ == '__main__':
     for base_file_name_1 in player1_file_names:
         try:
             player1_proc = api_player(8000, base_file_name_1, 'player1')
+            PerformanceRequestHandler.player_1_file = base_file_name_1
             for base_file_name_2 in player2_file_names:
                 try:
                     player2_proc = api_player(8001, base_file_name_2, 'player2')
+                    PerformanceRequestHandler.player_2_file = base_file_name_2
                     print "Esperando 10 segundos antes de levatar el browser"
                     time.sleep(10)
                     webbrowser.open('http://localhost:8300/performance.html')
@@ -53,8 +63,8 @@ if __name__ == '__main__':
                     print "Se termino el torneo"
                 finally:    
                     print "Matando player 2"
-                    player2_proc.kill()
+                    kill(player2_proc.pid)
         finally:
             print "Matando player 1"
-            player1_proc.kill()
+            kill(player1_proc.pid)
     
