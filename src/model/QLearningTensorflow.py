@@ -9,7 +9,7 @@ class QLearningTensorflow(Model):
     def __init__(self, n_input, n_hidden_1, outputLayer, existingAlgoPath=None):
         super(QLearningTensorflow, self).__init__()
         self.lr_drop_rate = 0.992
-        self.current_lr = 9.92e-6
+        self.current_lr = 9.92e-3
         self.n_hidden_1 = n_hidden_1
         self.outputLayer = outputLayer
         self.n_input = n_input
@@ -21,16 +21,16 @@ class QLearningTensorflow(Model):
         self.QTarget = self.Q + 0
         self.cost = tf.nn.l2_loss(self.Q-self.Y)
         self.optimizer = tf.train.GradientDescentOptimizer(self.current_lr).minimize(self.cost)
-        # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.1)
-        config = tf.ConfigProto(
-            device_count = {'GPU': 0}
-        )
-        self.tfsession = tf.Session(config=config)
-        # self.tfsession = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.35)
+        # config = tf.ConfigProto(
+        #     device_count = {'GPU': 0}
+        # )
+        # self.tfsession = tf.Session(config=config)
+        self.tfsession = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
         self.init = tf.global_variables_initializer()
         self.tfsession.run(self.init)
         self.initial_fit()
-        self.saver = tf.train.Saver()
+        self.saver = tf.train.Saver(max_to_keep = 10000)
 
         if existingAlgoPath is not None:
             tf.reset_default_graph()

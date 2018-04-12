@@ -43,7 +43,7 @@ AUDIT_DIC = {
 
 class QLearner(Player):
     
-    def __init__(self, name, existingAlgoPath=None):
+    def __init__(self, name, existingAlgoPath=None, n_hidden_1=240, learn='y'):
         super(QLearner, self).__init__()
         self.name = name
         self.dataFilePath = 'data.h5' # Where to save data for offline learning
@@ -53,7 +53,8 @@ class QLearner(Player):
         self.ACTION = np.array([]) # ACTION taken for input X
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
         # self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(60,20), outputLayer=15, existingAlgoPath=existingAlgoPath)
-        self.algorithm = QLearningTensorflow(n_input=self.m, n_hidden_1=640, outputLayer=15, existingAlgoPath=existingAlgoPath)
+        
+        self.algorithm = QLearningTensorflow(n_input=self.m, n_hidden_1=n_hidden_1, outputLayer=15, existingAlgoPath=existingAlgoPath)
         # self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=5)
         #self.algorithm = QLearningSGDRegressor()
         self.cardConverter = SimplifyValueCard()
@@ -62,14 +63,25 @@ class QLearner(Player):
         self.steps = 0 # Current steps from last update of target algorithm
         self.memorySize = 1000 # Size of memory for ExpRep
         self.trainSize = 32 # Expe Replay size
-        self.epsilon = 0.19 # Probability of taking a random action
+        self.epsilon = 1 # Probability of taking a random action
         self.epsilon_descent = 0.1 # Decrese every N learning steps
         self.epsilon_minimum = 0.1 # Minimum epslion
         self.epsilonIterations = 0
-        self.doLearn = True
+        if learn == 'n':
+            self.doLearn = False
+        else:
+            self.doLearn = True
         self.loadRandomTestDataset()
         self.countTargetUpdates = 0
-        print "QLearner created!"
+        self.full_name = ('lr_' + str(self.lr) + '_' + 
+                          'C_' + str(self.C) + '_' + 
+                          'memorySize_' + str(self.memorySize) + '_' + 
+                          'trainSize_' + str(self.trainSize) + '_' + 
+                          'epsilon_descent_' + str(self.epsilon_descent) + '_' + 
+                          'epsilon_minimum_' + str(self.epsilon_minimum) + '_' + 
+                          'h1_' + str(n_hidden_1) + '_' + 
+                          str(self.name))
+        print(self.full_name,"QLearner created!")
     
     def getFeatureSetSize(self):
         m = 0
@@ -254,10 +266,8 @@ class QLearner(Player):
                 self.steps = 0
                 self.testConvergence()
                 print("Target updated ", self.countTargetUpdates)
-                if self.countTargetUpdates in [2000,3700,4744,5963]:
-                    self.save(self.name + '_' + str(self.countTargetUpdates))
-                if self.countTargetUpdates in [2000/2,3700/2,4744/2,5963/2]:
-                    self.save(self.name + '_equal_batches_' + str(self.countTargetUpdates))
+                if self.countTargetUpdates % 10 == 0:
+                    self.save(self.full_name + '_' + str(self.countTargetUpdates))
 
         return "OK"
     
