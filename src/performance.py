@@ -82,4 +82,4 @@ if __name__ == '__main__':
         finally:
             print "Matando player 1"
             kill(player1_proc.pid)
-    
+    browser.quit()

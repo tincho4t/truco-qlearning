@@ -23,12 +23,16 @@ if __name__ == '__main__':
 	player = None
 	if 'file' in args and args['file'] is not None:
 		if 'hidden' in args and args['hidden'] is not None:
-			player = QLearner(args['name'], args['file'], args['hidden'], args['learn'])
+			player = QLearner(args['name'], existingAlgoPath=args['file'], n_hidden_1=args['hidden'], learn=args['learn'])
 		else:
 			player = QLearner(args['name'], args['file'])
 	elif 'rule' in args and args['rule'] is not None:
 		player = RulePlayer()
 	else:
-		player = QLearner(args['name'])
+		if 'hidden' in args and args['hidden'] is not None:
+			player = QLearner(args['name'], n_hidden_1=args['hidden'], learn=args['learn'])
+		else:
+			player = QLearner(args['name'])
+
 
 	main(port, player)

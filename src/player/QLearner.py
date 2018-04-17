@@ -71,7 +71,7 @@ class QLearner(Player):
             self.doLearn = False
         else:
             self.doLearn = True
-        self.loadRandomTestDataset()
+        # self.loadRandomTestDataset()
         self.countTargetUpdates = 0
         self.full_name = ('lr_' + str(self.lr) + '_' + 
                           'C_' + str(self.C) + '_' + 
@@ -260,13 +260,15 @@ class QLearner(Player):
             self.steps += 1
             if self.C < self.steps:
                 self.countTargetUpdates += 1
+                self.save(self.full_name + '_' + str(self.countTargetUpdates) +'pre_target_update')
                 self.algorithm.updateTarget()
+                self.save(self.full_name + '_' + str(self.countTargetUpdates) +'post_target_update')
                 self.audit()
                 self.algorithm.updateLR()
                 self.steps = 0
-                self.testConvergence()
+                #self.testConvergence()
                 print("Target updated ", self.countTargetUpdates)
-                if self.countTargetUpdates % 10 == 0:
+                if self.countTargetUpdates % 100 == 0:
                     self.save(self.full_name + '_' + str(self.countTargetUpdates))
 
         return "OK"

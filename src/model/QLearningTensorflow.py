@@ -8,8 +8,9 @@ class QLearningTensorflow(Model):
     
     def __init__(self, n_input, n_hidden_1, outputLayer, existingAlgoPath=None):
         super(QLearningTensorflow, self).__init__()
-        self.lr_drop_rate = 0.992
-        self.current_lr = 9.92e-3
+        self.lr_drop_rate = tf.constant(0.992)
+        self.min_lr = tf.constant(0.00001)
+        self.current_lr = tf.Variable(9.92e-3)
         self.n_hidden_1 = n_hidden_1
         self.outputLayer = outputLayer
         self.n_input = n_input
@@ -21,7 +22,7 @@ class QLearningTensorflow(Model):
         self.QTarget = self.Q + 0
         self.cost = tf.nn.l2_loss(self.Q-self.Y)
         self.optimizer = tf.train.GradientDescentOptimizer(self.current_lr).minimize(self.cost)
-        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.35)
+        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.3)
         # config = tf.ConfigProto(
         #     device_count = {'GPU': 0}
         # )
@@ -31,10 +32,17 @@ class QLearningTensorflow(Model):
         self.tfsession.run(self.init)
         self.initial_fit()
         self.saver = tf.train.Saver(max_to_keep = 10000)
+        self.tf_updateLR = self.tf_update_lr()
 
         if existingAlgoPath is not None:
             tf.reset_default_graph()
             self.saver.restore(self.tfsession, existingAlgoPath)
+
+    # TF function to decrease LR if LR is bigger than min_lr
+    def tf_update_lr(self):
+        def true_fn(): return tf.multiply(self.current_lr, self.lr_drop_rate)
+        def false_fn(): return self.current_lr
+        return tf.assign(self.current_lr, tf.cond(tf.less(self.min_lr, self.current_lr), true_fn, false_fn))
 
     def Q_model(self):
         self.dense = tf.layers.dense(inputs=self.X, units=self.n_hidden_1, activation=tf.nn.relu)
@@ -61,11 +69,10 @@ class QLearningTensorflow(Model):
             return self.tfsession.run(self.Q, feed_dict = {self.X:X})
 
     def updateLR(self):
-        if self.current_lr > 0.00001:
-            self.current_lr*=self.lr_drop_rate
+        self.tfsession.run(self.tf_updateLR)
     
     def updateTarget(self):
-        self.optimizer = tf.train.GradientDescentOptimizer(self.current_lr).minimize(self.cost)
+        # self.optimizer = tf.train.GradientDescentOptimizer(self.current_lr).minimize(self.cost)
         self.QTarget = self.Q + 0
         print("TARGET UPDATED")
         print("Current LR is",self.current_lr)
