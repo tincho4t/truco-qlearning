@@ -260,9 +260,7 @@ class QLearner(Player):
             self.steps += 1
             if self.C < self.steps:
                 self.countTargetUpdates += 1
-                self.save(self.full_name + '_' + str(self.countTargetUpdates) +'pre_target_update')
                 self.algorithm.updateTarget()
-                self.save(self.full_name + '_' + str(self.countTargetUpdates) +'post_target_update')
                 self.audit()
                 self.algorithm.updateLR()
                 self.steps = 0
