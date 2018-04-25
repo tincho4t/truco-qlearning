@@ -240,10 +240,9 @@ class QLearner(Player):
                 self.X = self.X[:-diff]
                 self.ACTION = self.ACTION[:-diff]
                 self.Y = self.Y[:-diff]
-            if self.steps % 1 == 0:
-                randomTrainIndexes = np.random.randint(0, min(self.memorySize, self.Y.shape[0]), min(self.Y.shape[0], self.trainSize))
-                self.algorithm.learn(self.X[randomTrainIndexes,:], self.ACTION[randomTrainIndexes], self.Y[randomTrainIndexes])
-                # self.saveDataset(np.array(featureRows), np.array(actionRows), np.array(yRows), np.array(possibleActionsRows)) # Save data for offline learning
+            randomTrainIndexes = np.random.randint(0, min(self.memorySize, self.Y.shape[0]), min(self.Y.shape[0], self.trainSize))
+            self.algorithm.learn(self.X[randomTrainIndexes,:], self.ACTION[randomTrainIndexes], self.Y[randomTrainIndexes])
+            # self.saveDataset(np.array(featureRows), np.array(actionRows), np.array(yRows), np.array(possibleActionsRows)) # Save data for offline learning
 
             # Lower epsilon
             if self.epsilonIterations > 10000:
@@ -266,7 +265,7 @@ class QLearner(Player):
                 self.steps = 0
                 #self.testConvergence()
                 print("Target updated ", self.countTargetUpdates)
-                if self.countTargetUpdates % 100 == 0:
+                if self.countTargetUpdates == 1200:
                     self.save(self.full_name + '_' + str(self.countTargetUpdates))
 
         return "OK"

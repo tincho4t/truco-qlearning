@@ -22,7 +22,7 @@ class QLearningTensorflow(Model):
         self.QTarget = self.Q + 0
         self.cost = tf.nn.l2_loss(self.Q-self.Y)
         self.optimizer = tf.train.GradientDescentOptimizer(self.current_lr).minimize(self.cost)
-        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.3)
+        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.25)
         # config = tf.ConfigProto(
         #     device_count = {'GPU': 0}
         # )
