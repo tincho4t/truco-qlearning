@@ -1,3 +1,4 @@
+import os
 from sklearn.externals import joblib
 from Player import Player
 import math
@@ -266,7 +267,7 @@ class QLearner(Player):
                 #self.testConvergence()
                 print("Target updated ", self.countTargetUpdates)
                 if self.countTargetUpdates == 1200:
-                    self.save(self.full_name + '_' + str(self.countTargetUpdates))
+                    self.save(os.path.join(os.getcwd(), self.full_name + '_' + str(self.countTargetUpdates)))
 
         return "OK"
     
