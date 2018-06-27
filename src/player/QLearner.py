@@ -73,7 +73,7 @@ class QLearner(Player):
         else:
             self.doLearn = True
         # self.loadRandomTestDataset()
-        self.countTargetUpdates = 0
+        self.countTargetUpdates = 3400
         self.full_name = ('lr_' + str(self.lr) + '_' + 
                           'C_' + str(self.C) + '_' + 
                           'memorySize_' + str(self.memorySize) + '_' + 
@@ -266,7 +266,7 @@ class QLearner(Player):
                 self.steps = 0
                 #self.testConvergence()
                 print("Target updated ", self.countTargetUpdates)
-                if self.countTargetUpdates == 1200:
+                if self.countTargetUpdates % 200 == 0:
                     self.save(os.path.join(os.getcwd(), self.full_name + '_' + str(self.countTargetUpdates)))
 
         return "OK"

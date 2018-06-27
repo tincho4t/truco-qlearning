@@ -19,7 +19,7 @@ class PerformanceRequestHandler(BaseHTTPRequestHandler):
     def save_results(self, match_results):
         csv_file  = open(self.save_folder + '/results.csv', "a")
         writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
-        writer.writerow([str(datetime.datetime.utcnow()), self.player_1_file, self.player_2_file, match_results['player_1_average_wins']])
+        writer.writerow([str(datetime.datetime.utcnow()), self.player_1_file, self.player_2_file, match_results['player_1_average_wins'], match_results['player_1_average_points']])
         PerformanceRequestHandler.performance_measured = True
         print "Se paso a TRUE %d" % PerformanceRequestHandler.performance_measured
 

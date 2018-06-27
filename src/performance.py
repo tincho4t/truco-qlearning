@@ -32,14 +32,17 @@ def get_player_files(path):
     return([x[:-6] for x in glob.glob(path + '/*.index')])
 
 def api_player(port, path, name="player_1", hidden=640, learn='n'):
-    cmd = "python main.py -p %d -f %s -n %s -hi %d -l %s" % (port, path, name, hidden, learn) # TODO: Agregar parametro para que no aprenda la red
+    cmd = "python main.py -p %d -f %s -n %s -hi %d -l %s" % (port, path, name, hidden, learn)
     print cmd
     return Popen(cmd, shell=True)
 
 def get_h1_layer_size(file):
     file_array = file.split('_')
-    print(file_array)
     return int(file_array[file_array.index('h1')+1])
+
+def get_batch_number(file):
+    file_array = file.split('_')
+    return int(file_array[-1])
 
 if __name__ == '__main__':
     args = vars(parser.parse_args())
@@ -58,25 +61,31 @@ if __name__ == '__main__':
             player1_h1_nodes = get_h1_layer_size(base_file_name_1)
             player1_proc = api_player(8000, base_file_name_1, 'player1', player1_h1_nodes)
             PerformanceRequestHandler.player_1_file = base_file_name_1
+            player1_batch_count = get_batch_number(base_file_name_1)
             for base_file_name_2 in player2_file_names:
-                try:
-                    player2_h1_nodes = get_h1_layer_size(base_file_name_2)
-                    player2_proc = api_player(8001, base_file_name_2, 'player2', player2_h1_nodes)
-                    PerformanceRequestHandler.player_2_file = base_file_name_2
-                    print "Esperando 10 segundos antes de levatar el browser"
-                    time.sleep(10)
-                    if 'localhost' in browser.current_url:
-                        browser.refresh()
-                    else:
-                        browser.get('http://localhost:8300/performance.html')
-                    httpd.handle_request() # ESPERO EL OPTIONS
-                    httpd.handle_request() # ESPERO EL POST
-                    print "Se termino el torneo"
-                except Exception as e: 
-                    print(e)
-                finally:    
-                    print "Matando player 2"
-                    kill(player2_proc.pid)
+                if base_file_name_1 != base_file_name_2:
+                    player2_batch_count = get_batch_number(base_file_name_2)
+                    if player1_batch_count == player2_batch_count:
+                        try:
+                            player2_h1_nodes = get_h1_layer_size(base_file_name_2)
+                            player2_proc = api_player(8001, base_file_name_2, 'player2', player2_h1_nodes)
+                            PerformanceRequestHandler.player_2_file = base_file_name_2
+                            print "Esperando 2 segundos antes de levatar el browser"
+                            time.sleep(2)
+                            if 'localhost' in browser.current_url:
+                                browser.refresh()
+                            else:
+                                browser.get('http://localhost:8300/performance.html')
+                            httpd.handle_request() # ESPERO EL OPTIONS
+                            httpd.handle_request() # ESPERO EL POST
+                            print "Se termino el torneo"
+                        except Exception as e: 
+                            print(e)
+                        finally:    
+                            print "Matando player 2"
+                            kill(player2_proc.pid)
+                else:
+                    print "Mismo jugador, salteando partido"
         except Exception as e: 
             print(e)
         finally:

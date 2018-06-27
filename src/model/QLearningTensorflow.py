@@ -10,7 +10,8 @@ class QLearningTensorflow(Model):
         super(QLearningTensorflow, self).__init__()
         self.lr_drop_rate = tf.constant(0.992)
         self.min_lr = tf.constant(0.00001)
-        self.current_lr = tf.Variable(9.92e-3)
+        # self.current_lr = tf.Variable(9.92e-3)
+        self.current_lr = tf.Variable(0.00001)
         self.n_hidden_1 = n_hidden_1
         self.outputLayer = outputLayer
         self.n_input = n_input
@@ -22,12 +23,12 @@ class QLearningTensorflow(Model):
         self.QTarget = self.Q + 0
         self.cost = tf.nn.l2_loss(self.Q-self.Y)
         self.optimizer = tf.train.GradientDescentOptimizer(self.current_lr).minimize(self.cost)
-        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.25)
+        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.42)
+        self.tfsession = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
         # config = tf.ConfigProto(
         #     device_count = {'GPU': 0}
         # )
         # self.tfsession = tf.Session(config=config)
-        self.tfsession = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
         self.init = tf.global_variables_initializer()
         self.tfsession.run(self.init)
         self.initial_fit()
