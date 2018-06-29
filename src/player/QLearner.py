@@ -73,7 +73,7 @@ class QLearner(Player):
         else:
             self.doLearn = True
         # self.loadRandomTestDataset()
-        self.countTargetUpdates = 3400
+        self.countTargetUpdates = 0
         self.full_name = ('lr_' + str(self.lr) + '_' + 
                           'C_' + str(self.C) + '_' + 
                           'memorySize_' + str(self.memorySize) + '_' + 
