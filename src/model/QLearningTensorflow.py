@@ -17,7 +17,7 @@ class QLearningTensorflow(Model):
         self.n_input = n_input
         self.X = tf.placeholder("float", [None, n_input])
         self.Y = tf.placeholder("float", [None, outputLayer])
-        self.prob = tf.placeholder_with_default(1, shape=())
+        self.prob = tf.placeholder_with_default(0.0, shape=())
 
         self.Q = self.Q_model()
         self.QTarget = self.Q + 0
@@ -80,10 +80,10 @@ class QLearningTensorflow(Model):
     
     def learn(self, X_in, ACTION_in, Y_in):
         Y_LEARN = self.getYOnlyForActionTaken(X_in, ACTION_in, Y_in)
-        self.tfsession.run(self.optimizer, feed_dict={self.X: X_in, self.Y: Y_LEARN, self.prob: 0.8})
+        self.tfsession.run(self.optimizer, feed_dict={self.X: X_in, self.Y: Y_LEARN, self.prob: 0.2})
     
     def getYOnlyForActionTaken(self, X, ACTION, Y):
-        allActionPredictions = self.tfsession.run(self.Q, feed_dict={self.X: X, self.prob: 1})
+        allActionPredictions = self.tfsession.run(self.Q, feed_dict={self.X: X, self.prob: 0})
         for i in range(X.shape[0]):
             allActionPredictions[i, int(ACTION[i])] = Y[i] # Only change the prediction for the action that was taken to the expected Y value
         return allActionPredictions
