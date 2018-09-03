@@ -67,3 +67,7 @@ lr_0.99_C_1000_memorySize_1000_trainSize_32_epsilon_descent_0.1_epsilon_minimum_
 
 
 lr_0.99_C_1000_memorySize_1000_trainSize_32_epsilon_descent_0.1_epsilon_minimum_0.1_h1_120_20180729_1200_players_5_5_7200
+
+
+Renombrar en caso de que te quedo mal un nombre ('s/NOMBRE_MAL/NOMBRE_BIEN/')
+rename  's/players_3_2/players_2_2/' *
