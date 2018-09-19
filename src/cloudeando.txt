@@ -1,9 +1,9 @@
 # Installation
 sudo apt-get update
 
-sudo apt-get install git-core
+echo "Y" | sudo apt-get install git-core
 
-sudo apt-get install python-pip
+echo "Y" | sudo apt-get install python-pip
 
 pip install --user virtualenv
 
@@ -18,20 +18,21 @@ sudo sh -c "echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' >> /et
 wget https://dl.google.com/linux/linux_signing_key.pub
 sudo apt-key add linux_signing_key.pub
 sudo apt update
-sudo apt install google-chrome-stable
+echo "Y" | sudo apt install google-chrome-stable
 
 
 # Running Models
 source ~/truco/bin/activate
+cd src/
 # From truco-qlearning/src DO:
 # Check LR start in model/QLearningTensorflow and targetupdatecount in player/Qlearner
-python main.py -p 8001 -n 20180824_1200_players_2_1 -l y -hi 640
+python main.py -p 8001 -n 20180919_0003_players_2_1 -l y -hi 640
 # ctrl+z then by
-python main.py -p 8002 -n 20180824_1200_players_2_2 -l y -hi 640
+python main.py -p 8002 -n 20180919_0003_players_2_2 -l y -hi 640
 # ctrl+z then bg
-python main.py -p 8003 -n 20180824_1200_players_3_3 -l y -hi 640
-python main.py -p 8004 -n 20180824_1200_players_5_4 -l y -hi 640
-python main.py -p 8005 -n 20180824_1200_players_5_5 -l y -hi 640
+python main.py -p 8003 -n 20180919_0000_players_3_3 -l y -hi 640
+python main.py -p 8004 -n 20180919_0000_players_5_4 -l y -hi 640
+python main.py -p 8005 -n 20180919_0000_players_5_5 -l y -hi 640
 # From VirtualTruco DO:
 # Update tournament_index.js accordingly:
 # 	function(){ return new apiPlayer("Api Player 2", "8002", false)},
