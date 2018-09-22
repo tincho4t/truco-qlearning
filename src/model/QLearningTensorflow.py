@@ -11,7 +11,7 @@ class QLearningTensorflow(Model):
         self.lr_drop_rate = tf.constant(0.992)
         self.min_lr = tf.constant(0.00001)
         # self.current_lr = tf.Variable(9.92e-3)
-        self.current_lr = tf.Variable(0.00001)
+        self.current_lr = tf.Variable(0.01)
         self.n_hidden_1 = n_hidden_1
         self.outputLayer = outputLayer
         self.n_input = n_input
