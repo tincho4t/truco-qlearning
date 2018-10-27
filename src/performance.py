@@ -71,7 +71,7 @@ if __name__ == '__main__':
                             player2_proc = api_player(8001, base_file_name_2, 'player2', player2_h1_nodes)
                             PerformanceRequestHandler.player_2_file = base_file_name_2
                             print "Esperando 2 segundos antes de levatar el browser"
-                            time.sleep(2)
+                            time.sleep(5)
                             if 'localhost' in browser.current_url:
                                 browser.refresh()
                             else:
