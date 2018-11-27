@@ -16,6 +16,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-fp1','--folder_players1', help='Path to folder with models of first group', required=False)
 parser.add_argument('-fp2','--folder_players2', help='Path to folder with models of second group', required=False)
 parser.add_argument('-sf','--save_folder', help='Path to folder where to save results', required=False)
+parser.add_argument('-minb','--min_batch', help='Min batch to run performance on', required=False)
+parser.add_argument('-maxb','--max_batch', help='Max batch to run performance on', required=False)
 
 
 def kill(proc_pid):
@@ -49,46 +51,56 @@ if __name__ == '__main__':
     path_to_players1 = args['folder_players1']
     path_to_players2 = args['folder_players2']
     save_folder = args['save_folder']
+    min_batch = int(args['min_batch'])
+    max_batch = int(args['max_batch'])
     httpd = startPerformanceWebServer(save_folder)
-    browser = webdriver.Firefox()
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-sandbox')
+    prefs = {"profile.managed_default_content_settings.images":2}
+    chrome_options.add_experimental_option("prefs",prefs)
+    browser = webdriver.Chrome(chrome_options=chrome_options)
+    # browser = webdriver.Firefox()
     map_port_player = {}
 
     player1_file_names = get_player_files(path_to_players1)
     player2_file_names = get_player_files(path_to_players2)
 
     for base_file_name_1 in player1_file_names:
-        try:
-            player1_h1_nodes = get_h1_layer_size(base_file_name_1)
-            player1_proc = api_player(8000, base_file_name_1, 'player1', player1_h1_nodes)
-            PerformanceRequestHandler.player_1_file = base_file_name_1
-            player1_batch_count = get_batch_number(base_file_name_1)
-            for base_file_name_2 in player2_file_names:
-                if base_file_name_1 != base_file_name_2:
-                    player2_batch_count = get_batch_number(base_file_name_2)
-                    if player1_batch_count == player2_batch_count:
-                        try:
-                            player2_h1_nodes = get_h1_layer_size(base_file_name_2)
-                            player2_proc = api_player(8001, base_file_name_2, 'player2', player2_h1_nodes)
-                            PerformanceRequestHandler.player_2_file = base_file_name_2
-                            print "Esperando 2 segundos antes de levatar el browser"
-                            time.sleep(5)
-                            if 'localhost' in browser.current_url:
-                                browser.refresh()
-                            else:
-                                browser.get('http://localhost:8300/performance.html')
-                            httpd.handle_request() # ESPERO EL OPTIONS
-                            httpd.handle_request() # ESPERO EL POST
-                            print "Se termino el torneo"
-                        except Exception as e: 
-                            print(e)
-                        finally:    
-                            print "Matando player 2"
-                            kill(player2_proc.pid)
-                else:
-                    print "Mismo jugador, salteando partido"
-        except Exception as e: 
-            print(e)
-        finally:
-            print "Matando player 1"
-            kill(player1_proc.pid)
+        player1_h1_nodes = get_h1_layer_size(base_file_name_1)
+        player1_batch_count = get_batch_number(base_file_name_1)
+        if min_batch <= player1_batch_count <= max_batch:
+            try:
+                player1_proc = api_player(8000, base_file_name_1, 'player1', player1_h1_nodes)
+                PerformanceRequestHandler.player_1_file = base_file_name_1
+                PerformanceRequestHandler.batch_number = player1_batch_count
+                for base_file_name_2 in player2_file_names:
+                    if base_file_name_1 != base_file_name_2:
+                        player2_batch_count = get_batch_number(base_file_name_2)
+                        if player1_batch_count == player2_batch_count:
+                            try:
+                                player2_h1_nodes = get_h1_layer_size(base_file_name_2)
+                                player2_proc = api_player(8001, base_file_name_2, 'player2', player2_h1_nodes)
+                                PerformanceRequestHandler.player_2_file = base_file_name_2
+                                print "Esperando 2 segundos antes de levatar el browser"
+                                time.sleep(5)
+                                if 'localhost' in browser.current_url:
+                                    browser.refresh()
+                                else:
+                                    browser.get('http://localhost:8300/performance.html')
+                                httpd.handle_request() # ESPERO EL OPTIONS
+                                httpd.handle_request() # ESPERO EL POST
+                                print "Se termino el torneo"
+                            except Exception as e: 
+                                print(e)
+                            finally:    
+                                print "Matando player 2"
+                                kill(player2_proc.pid)
+                    else:
+                        print "Mismo jugador, salteando partido"
+            except Exception as e: 
+                print(e)
+            finally:
+                print "Matando player 1"
+                kill(player1_proc.pid)
     browser.quit()

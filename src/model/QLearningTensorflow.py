@@ -23,12 +23,12 @@ class QLearningTensorflow(Model):
         self.QTarget = self.Q + 0
         self.cost = tf.nn.l2_loss(self.Q-self.Y)
         self.optimizer = tf.train.GradientDescentOptimizer(self.current_lr).minimize(self.cost)
-        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.42)
-        self.tfsession = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
-        # config = tf.ConfigProto(
-        #     device_count = {'GPU': 0}
-        # )
-        # self.tfsession = tf.Session(config=config)
+        # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.32)
+        # self.tfsession = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+        config = tf.ConfigProto(
+            device_count = {'GPU': 0}
+        )
+        self.tfsession = tf.Session(config=config)
         self.init = tf.global_variables_initializer()
         self.tfsession.run(self.init)
         self.initial_fit()
