@@ -20,6 +20,7 @@ sudo apt-key add linux_signing_key.pub
 sudo apt update
 echo "Y" | sudo apt install google-chrome-stable
 
+screen
 
 # Running Models
 source ~/truco/bin/activate
@@ -39,6 +40,9 @@ python main.py -p 8005 -n 20180919_0000_players_5_5 -l y -hi 640
 #	function(){ return new apiPlayer("Api Player 1", "8001", false)},
 google-chrome --no-gpu --disable-software-rasterizer --headless --mute-audio --hide-scrollbars --remote-debugging-port=9222 --no-sandbox --disable-setuid-sandbox ~/VirtualTruco/index.html
 # ctrl+z then bg
+
+
+CTRL+A y luego CTRL+D
 
 # Check if OK by looking at top
 
