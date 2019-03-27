@@ -28,7 +28,9 @@ from api.dto.Card import Card
 from model.QLearningNeuralNetwork import QLearningNeuralNetwork
 from model.QLearningTensorflow import QLearningTensorflow
 
+
 AUDIT_ACTIONS = ["Truco", "ReTruco", "ValeCuatro", "Quiero", "NoQuiero", "Envido", "RealEnvido", "FaltaEnvido", "PlayCardLow", "PlayCardMiddle", "PlayCardHigh"]
+# Esto dejo de andar xq cambiamos el tamanio del feature PossibleACtionsBitMap
 AUDIT_DIC = {
             "ENVIDO_ALTO_SOY_MANO": [0.23076923076923078, True, 0.3076923076923077, True, 0.6923076923076923, True, 1, 0, 0, 1, 0.3333333333333333, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.9090909090909091, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             "ENVIDO_MEDIO_SOY_MANO": [0.15384615384615385, True, 0.3076923076923077, True, 0.38461538461538464, True, 1, 0, 0, 1, 0.3333333333333333, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0.7878787878787878, 0.0, 0.0, 0.0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -55,7 +57,7 @@ class QLearner(Player):
         self.Y = np.array([]) # POINTS given for taking Action in game state (INPUT)
         # self.algorithm = QLearningNeuralNetwork(inputLayer=self.m, hiddenLayerSizes=(60,20), outputLayer=15, existingAlgoPath=existingAlgoPath)
         
-        self.algorithm = QLearningTensorflow(n_input=self.m, n_hidden_1=n_hidden_1, outputLayer=15, existingAlgoPath=existingAlgoPath)
+        self.algorithm = QLearningTensorflow(n_input=self.m, n_hidden_1=n_hidden_1, outputLayer=ACTION.POSSIBLE_ACTIONS, existingAlgoPath=existingAlgoPath)
         # self.algorithm = QLearningRandomForest(newEstimatorsPerLearn=5)
         #self.algorithm = QLearningSGDRegressor()
         self.cardConverter = SimplifyValueCard()
@@ -178,13 +180,14 @@ class QLearner(Player):
             print("STOPED LEARNING")
 
     def audit(self):
-        for situation, vector in AUDIT_DIC.iteritems():
-            resultString = situation
-            predictions = self.algorithm.predict(np.array(vector).reshape(1, -1), target=True)[0]
-            for action in AUDIT_ACTIONS:
-                action_index = ACTION.actionToIndexDic[action]
-                resultString += " " + action + ":" + str(predictions[action_index])
-            print(resultString)
+        pass
+        # for situation, vector in AUDIT_DIC.iteritems():
+        #     resultString = situation
+        #     predictions = self.algorithm.predict(np.array(vector).reshape(1, -1), target=True)[0]
+        #     for action in AUDIT_ACTIONS:
+        #         action_index = ACTION.actionToIndexDic[action]
+        #         resultString += " " + action + ":" + str(predictions[action_index])
+        #     print(resultString)
 
     def printActionStats(self, possibleActions, preds):
         indexes = np.where(possibleActions)[0]

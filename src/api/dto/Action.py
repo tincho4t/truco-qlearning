@@ -6,16 +6,15 @@ class Action(object):
 	VALECUATRO = "ValeCuatro"
 	QUIERO = "Quiero"
 	NOQUIERO = "NoQuiero"
-	PLAYCARD = "PlayCard"
-	POSTSCORE = "PostScore"
-	SONBUENAS = "SonBuenas"
 	ENVIDO = "Envido"
 	REALENVIDO = "RealEnvido"
 	FALTAENVIDO = "FaltaEnvido"
-	GOTODECK = "GoToDec"
 	PLAYCARDLOW = "PlayCardLow"
 	PLAYCARDMIDDLE = "PlayCardMiddle"
 	PLAYCARDHIGH = "PlayCardHigh"
+	PLAYCARD = "PlayCard"
+
+	POSSIBLE_ACTIONS = 11
 
 	actionToIndexDic = {
 		"Truco":0,
@@ -23,32 +22,24 @@ class Action(object):
 		"ValeCuatro":2,
 		"Quiero":3,
 		"NoQuiero":4,
-		"PlayCard":5,
-		"PostScore":6,
-		"SonBuenas":7,
-		"Envido":8,
-		"RealEnvido":9,
-		"FaltaEnvido":10,
-		"GoToDec":11,
-		"PlayCardLow": 12,
-		"PlayCardMiddle": 13,
-		"PlayCardHigh": 14
+		"Envido":5,
+		"RealEnvido":6,
+		"FaltaEnvido":7,
+		"PlayCardLow": 8,
+		"PlayCardMiddle": 9,
+		"PlayCardHigh": 10
 	}
 
 	actionToStringDic = {
 		0:"Truco",
 		1:"ReTruco",
-		2:"ValeCuatro" ,
+		2:"ValeCuatro",
 		3:"Quiero",
-		4:"NoQuiero" ,
-		5:"PlayCard",
-		6:"PostScore" ,
-		7:"SonBuenas",
-		8:"Envido",
-		9:"RealEnvido" ,
-		10:"FaltaEnvido",
-		11:"GoToDec",
-		12:"PlayCardLow",
-		13:"PlayCardMiddle",
-		14:"PlayCardHigh"
+		4:"NoQuiero",
+		5:"Envido",
+		6:"RealEnvido",
+		7:"FaltaEnvido",
+		8:"PlayCardLow",
+		9:"PlayCardMiddle",
+		10:"PlayCardHigh"
 	}
