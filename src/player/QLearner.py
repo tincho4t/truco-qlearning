@@ -266,7 +266,7 @@ class QLearner(Player):
                 self.steps = 0
                 #self.testConvergence()
                 print("Target updated ", self.countTargetUpdates)
-                if self.countTargetUpdates % 200 == 0:
+                if (self.countTargetUpdates < 500 and self.countTargetUpdates % 25 == 0) or (self.countTargetUpdates % 200 == 0):
                     self.save(os.path.join(os.getcwd(), self.full_name + '_' + str(self.countTargetUpdates)))
 
         return "OK"
